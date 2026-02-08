@@ -57,10 +57,10 @@ export default function KycStatusScreen({ navigation }) {
           </View>
         ))}
 
-        <View style={styles.helpCard}>
+        <Pressable style={styles.helpCard} onPress={() => navigation.navigate('SupportCenter')}>
           <Icon name="help-circle-outline" size={20} color="#16A34A" />
           <Text style={styles.helpText}>Need help? Contact support for verification assistance.</Text>
-        </View>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );

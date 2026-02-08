@@ -38,7 +38,10 @@ export default function OrderEnRouteScreen({ navigation, route }) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Customer</Text>
           <Text style={styles.cardSub}>{order?.drop ?? 'Customer address'}</Text>
-          <Pressable style={styles.secondaryBtn}>
+          <Pressable
+            style={styles.secondaryBtn}
+            onPress={() => navigation.navigate('IssueReport', { orderId: order?.id })}
+          >
             <Text style={styles.secondaryText}>Call customer</Text>
           </Pressable>
         </View>
