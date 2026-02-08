@@ -23,6 +23,13 @@ import ActivityScreen from '../rider/ActivityScreen';
 import RiderPayoutScreen from '../rider/RiderPayoutScreen';
 import BankAccountScreen from '../rider/BankAccountScreen';
 import AddBankAccountScreen from '../rider/AddBankAccountScreen';
+import PermissionsSetupScreen from '../rider/PermissionsSetupScreen';
+import KycStatusScreen from '../rider/KycStatusScreen';
+import ShiftManagementScreen from '../rider/ShiftManagementScreen';
+import NotificationsScreen from '../rider/NotificationsScreen';
+import IssueReportScreen from '../rider/IssueReportScreen';
+import OrderPickupScreen from '../rider/OrderPickupScreen';
+import OrderEnRouteScreen from '../rider/OrderEnRouteScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -107,6 +114,17 @@ function RiderStack() {
       {/* Bank details flow (for withdrawal) */}
       <Stack.Screen name="BankAccount" component={BankAccountScreen} />
       <Stack.Screen name="AddBankAccount" component={AddBankAccountScreen} />
+
+      {/* Onboarding & utilities */}
+      <Stack.Screen name="PermissionsSetup" component={PermissionsSetupScreen} />
+      <Stack.Screen name="KycStatus" component={KycStatusScreen} />
+      <Stack.Screen name="ShiftManagement" component={ShiftManagementScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen name="IssueReport" component={IssueReportScreen} />
+
+      {/* Order lifecycle */}
+      <Stack.Screen name="OrderPickup" component={OrderPickupScreen} />
+      <Stack.Screen name="OrderEnRoute" component={OrderEnRouteScreen} />
     </Stack.Navigator>
   );
 }
