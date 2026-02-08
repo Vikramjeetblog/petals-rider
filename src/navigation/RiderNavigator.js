@@ -7,6 +7,7 @@ import RiderTabs from './RiderTabs';
 import RiderLoginScreen from '../screens/auth/RiderLoginScreen';
 import RiderOtpScreen from '../screens/auth/RiderOtpScreen';
 
+// Core detail screens
 import OrderDetailsScreen from '../screens/OrderDetailsScreen';
 import DeliveryProofScreen from '../screens/DeliveryProofScreen';
 import EditRiderProfileScreen from '../rider/EditRiderProfileScreen';
@@ -15,22 +16,27 @@ import EditRiderProfileScreen from '../rider/EditRiderProfileScreen';
 import RiderPayoutScreen from '../rider/RiderPayoutScreen';
 import BankAccountScreen from '../rider/BankAccountScreen';
 import AddBankAccountScreen from '../rider/AddBankAccountScreen';
+
+// Onboarding & utilities
 import PermissionsSetupScreen from '../rider/PermissionsSetupScreen';
 import KycStatusScreen from '../rider/KycStatusScreen';
+import KycDocumentUploadScreen from '../rider/KycDocumentUploadScreen';
+import KycSelfieScreen from '../rider/KycSelfieScreen';
+import OnboardingChecklistScreen from '../rider/OnboardingChecklistScreen';
 import ShiftManagementScreen from '../rider/ShiftManagementScreen';
 import NotificationsScreen from '../rider/NotificationsScreen';
+import NotificationDetailScreen from '../rider/NotificationDetailScreen';
+import SupportCenterScreen from '../rider/SupportCenterScreen';
 import IssueReportScreen from '../rider/IssueReportScreen';
+
+// Order lifecycle
 import OrderPickupScreen from '../rider/OrderPickupScreen';
 import OrderEnRouteScreen from '../rider/OrderEnRouteScreen';
 import OrderArrivedScreen from '../rider/OrderArrivedScreen';
 import DeliverySummaryScreen from '../rider/DeliverySummaryScreen';
-import OnboardingChecklistScreen from '../rider/OnboardingChecklistScreen';
-import SupportCenterScreen from '../rider/SupportCenterScreen';
-import NotificationDetailScreen from '../rider/NotificationDetailScreen';
-import KycDocumentUploadScreen from '../rider/KycDocumentUploadScreen';
-import KycSelfieScreen from '../rider/KycSelfieScreen';
 
 const Stack = createNativeStackNavigator();
+
 // 🔐 Auth Stack
 function AuthStack({ setIsLoggedIn }) {
   return (
