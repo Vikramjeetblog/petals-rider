@@ -16,6 +16,13 @@ import EditRiderProfileScreen from '../rider/EditRiderProfileScreen';
 import RiderPayoutScreen from '../rider/RiderPayoutScreen';
 import BankAccountScreen from '../rider/BankAccountScreen';
 import AddBankAccountScreen from '../rider/AddBankAccountScreen';
+import PermissionsSetupScreen from '../rider/PermissionsSetupScreen';
+import KycStatusScreen from '../rider/KycStatusScreen';
+import ShiftManagementScreen from '../rider/ShiftManagementScreen';
+import NotificationsScreen from '../rider/NotificationsScreen';
+import IssueReportScreen from '../rider/IssueReportScreen';
+import OrderPickupScreen from '../rider/OrderPickupScreen';
+import OrderEnRouteScreen from '../rider/OrderEnRouteScreen';
 
 // Onboarding & utilities
 import PermissionsSetupScreen from '../rider/PermissionsSetupScreen';
@@ -68,13 +75,8 @@ function RiderStack() {
       {/* Onboarding & utilities */}
       <Stack.Screen name="PermissionsSetup" component={PermissionsSetupScreen} />
       <Stack.Screen name="KycStatus" component={KycStatusScreen} />
-      <Stack.Screen name="KycDocumentUpload" component={KycDocumentUploadScreen} />
-      <Stack.Screen name="KycSelfie" component={KycSelfieScreen} />
-      <Stack.Screen name="OnboardingChecklist" component={OnboardingChecklistScreen} />
       <Stack.Screen name="ShiftManagement" component={ShiftManagementScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
-      <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
-      <Stack.Screen name="SupportCenter" component={SupportCenterScreen} />
       <Stack.Screen name="IssueReport" component={IssueReportScreen} />
 
       {/* Order lifecycle */}
