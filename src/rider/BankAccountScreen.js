@@ -1,131 +1,119 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   SafeAreaView,
   FlatList,
-  RefreshControl,
-  ActivityIndicator,
   Alert,
+  Pressable,
 } from 'react-native';
-
 import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/Ionicons';
 
-export default function RiderPayoutScreen() {
-
-  // 🔥 mock backend data
-  const mockWallet = {
-    available: 1250,
-    pending: 340,
-  };
-
-  const mockHistory = [
+export default function BankAccountScreen({ navigation }) {
+  const [accounts, setAccounts] = useState([
     {
-      id: 1,
-      amount: 500,
-      status: 'Completed',
-      date: 'Today',
+      id: 'acc-1',
+      holderName: 'Rahul Kumar',
+      bankName: 'HDFC Bank',
+      accountLast4: '2317',
+      ifsc: 'HDFC0001234',
+      isPrimary: true,
     },
     {
-      id: 2,
-      amount: 750,
-      status: 'Processing',
-      date: 'Yesterday',
+      id: 'acc-2',
+      holderName: 'Rahul Kumar',
+      bankName: 'ICICI Bank',
+      accountLast4: '9081',
+      ifsc: 'ICIC0009876',
+      isPrimary: false,
     },
-  ];
+  ]);
 
-  const [wallet, setWallet] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const primaryAccount = useMemo(
+    () => accounts.find(account => account.isPrimary),
+    [accounts]
+  );
 
-  // ================= LOAD DATA =================
-
-  const loadData = async () => {
-    try {
-      // simulate backend delay
-      await new Promise(r => setTimeout(r, 700));
-
-      setWallet(mockWallet);
-      setHistory(mockHistory);
-
-    } catch (err) {
-      console.log('Payout load error:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  const setPrimary = (accountId) => {
+    setAccounts(prev =>
+      prev.map(account => ({
+        ...account,
+        isPrimary: account.id === accountId,
+      }))
+    );
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadData();
-  };
-
-  // ================= ACTION =================
-
-  const requestPayout = () => {
-
-    if (!wallet?.available) {
-      Alert.alert('No balance available');
-      return;
-    }
-
+  const confirmRemove = (accountId) => {
     Alert.alert(
-      'Request payout?',
-      `Withdraw ₹${wallet.available}`,
+      'Remove bank account?',
+      'This account will be removed from payouts.',
       [
         { text: 'Cancel' },
         {
-          text: 'Confirm',
+          text: 'Remove',
+          style: 'destructive',
           onPress: () =>
-            Alert.alert('Payout requested!'),
+            setAccounts(prev =>
+              prev.filter(account => account.id !== accountId)
+            ),
         },
       ]
     );
   };
 
-  // ================= HISTORY ITEM =================
-
-  const renderHistory = ({ item }) => {
-
-    const statusColor =
-      item.status === 'Completed'
-        ? '#16A34A'
-        : '#EA580C';
-
-    return (
-      <View style={styles.historyCard}>
-
+  const renderAccount = ({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.rowBetween}>
         <View>
-          <Text style={styles.amount}>
-            ₹{item.amount}
+          <Text style={styles.bankName}>{item.bankName}</Text>
+          <Text style={styles.accountText}>
+            {item.holderName} • •••• {item.accountLast4}
           </Text>
-          <Text style={styles.date}>
-            {item.date}
-          </Text>
+          <Text style={styles.ifsc}>IFSC: {item.ifsc}</Text>
         </View>
-
-        <Text
-          style={[
-            styles.status,
-            { color: statusColor },
-          ]}
-        >
-          {item.status}
-        </Text>
-
+        {item.isPrimary && (
+          <View style={styles.primaryBadge}>
+            <Text style={styles.primaryText}>Primary</Text>
+          </View>
+        )}
       </View>
-    );
-  };
 
-  // ================= UI =================
+      <View style={styles.actionRow}>
+        <Pressable
+          onPress={() =>
+            navigation.navigate('AddBankAccount', {
+              mode: 'edit',
+              account: item,
+            })
+          }
+          style={({ pressed }) => [styles.actionBtn, pressed && styles.pressed]}
+        >
+          <Icon name="create-outline" size={16} color="#16A34A" />
+          <Text style={styles.actionText}>Edit</Text>
+        </Pressable>
+
+        {!item.isPrimary && (
+          <Pressable
+            onPress={() => setPrimary(item.id)}
+            style={({ pressed }) => [styles.actionBtn, pressed && styles.pressed]}
+          >
+            <Icon name="star-outline" size={16} color="#16A34A" />
+            <Text style={styles.actionText}>Set primary</Text>
+          </Pressable>
+        )}
+
+        <Pressable
+          onPress={() => confirmRemove(item.id)}
+          style={({ pressed }) => [styles.actionBtn, pressed && styles.pressed]}
+        >
+          <Icon name="trash-outline" size={16} color="#DC2626" />
+          <Text style={[styles.actionText, styles.removeText]}>Remove</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -134,82 +122,67 @@ export default function RiderPayoutScreen() {
         colors={['#16A34A', '#22C55E']}
         style={styles.header}
       >
-        <Text style={styles.headerTitle}>
-          Payout Wallet
-        </Text>
+        <View style={styles.headerRow}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            hitSlop={10}
+            style={styles.backBtn}
+          >
+            <Icon name="arrow-back" size={22} color="#fff" />
+          </Pressable>
+
+          <Text style={styles.headerTitle}>Bank Accounts</Text>
+
+          <View style={{ width: 36 }} />
+        </View>
       </LinearGradient>
 
-      {loading ? (
-
-        <ActivityIndicator
-          size="large"
-          color="#16A34A"
-          style={{ marginTop: 40 }}
-        />
-
-      ) : (
-
-        <FlatList
-          data={history}
-          keyExtractor={i => i.id.toString()}
-          renderItem={renderHistory}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-            />
-          }
-          ListHeaderComponent={() => (
-
-            <View>
-
-              {/* Wallet card */}
-
-              <View style={styles.walletCard}>
-
-                <View style={styles.walletRow}>
-                  <Text style={styles.label}>
-                    Available
-                  </Text>
-                  <Text style={styles.balance}>
-                    ₹{wallet.available}
-                  </Text>
-                </View>
-
-                <View style={styles.walletRow}>
-                  <Text style={styles.label}>
-                    Pending
-                  </Text>
-                  <Text style={styles.pending}>
-                    ₹{wallet.pending}
-                  </Text>
-                </View>
-
-                <TouchableOpacity
-                  style={styles.payoutBtn}
-                  onPress={requestPayout}
-                >
-                  <Text style={styles.btnText}>
-                    Request Payout
-                  </Text>
-                </TouchableOpacity>
-
+      <FlatList
+        data={accounts}
+        keyExtractor={item => item.id}
+        renderItem={renderAccount}
+        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+        ListHeaderComponent={() => (
+          <View style={styles.summaryCard}>
+            <View style={styles.rowBetween}>
+              <View>
+                <Text style={styles.summaryLabel}>Primary account</Text>
+                <Text style={styles.summaryValue}>
+                  {primaryAccount
+                    ? `${primaryAccount.bankName} •••• ${primaryAccount.accountLast4}`
+                    : 'Not set'}
+                </Text>
               </View>
-
-              <Text style={styles.sectionTitle}>
-                Payout History
-              </Text>
-
+              <Icon name="card-outline" size={24} color="#16A34A" />
             </View>
-          )}
-          ListEmptyComponent={() => (
-            <View style={styles.empty}>
-              <Text>No payout history</Text>
-            </View>
-          )}
-          contentContainerStyle={{ padding: 16 }}
-        />
+          </View>
+        )}
+        ListEmptyComponent={() => (
+          <View style={styles.empty}>
+            <Icon name="card-outline" size={64} color="#9CA3AF" />
+            <Text style={styles.emptyTitle}>No bank account yet</Text>
+            <Text style={styles.emptySub}>
+              Add a bank account to receive payouts.
+            </Text>
+            <Pressable
+              onPress={() => navigation.navigate('AddBankAccount', { mode: 'add' })}
+              style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
+            >
+              <Text style={styles.primaryBtnText}>Add bank account</Text>
+            </Pressable>
+          </View>
+        )}
+      />
 
+      {accounts.length > 0 && (
+        <View style={styles.footer}>
+          <Pressable
+            onPress={() => navigation.navigate('AddBankAccount', { mode: 'add' })}
+            style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
+          >
+            <Text style={styles.primaryBtnText}>Add another account</Text>
+          </Pressable>
+        </View>
       )}
 
     </SafeAreaView>
@@ -226,7 +199,7 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    padding: 18,
+    padding: 14,
   },
 
   headerTitle: {
@@ -235,78 +208,153 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  walletCard: {
-    backgroundColor: '#fff',
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  backBtn: {
+    width: 36,
+    height: 36,
     borderRadius: 18,
-    padding: 18,
-    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+
+  summaryCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
     elevation: 2,
   },
 
-  walletRow: {
+  summaryLabel: {
+    color: '#6B7280',
+    fontSize: 12,
+    marginBottom: 4,
+  },
+
+  summaryValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+  },
+
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 2,
+  },
+
+  rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-
-  label: {
-    color: '#6B7280',
-  },
-
-  balance: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#16A34A',
-  },
-
-  pending: {
-    fontWeight: '700',
-    color: '#EA580C',
-  },
-
-  payoutBtn: {
-    marginTop: 14,
-    backgroundColor: '#16A34A',
-    padding: 12,
-    borderRadius: 10,
     alignItems: 'center',
   },
 
-  btnText: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-
-  sectionTitle: {
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-
-  historyCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 14,
-    marginBottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
-  amount: {
+  bankName: {
+    fontSize: 16,
     fontWeight: '800',
+    color: '#111827',
   },
 
-  date: {
+  accountText: {
+    marginTop: 4,
+    color: '#374151',
+  },
+
+  ifsc: {
+    marginTop: 4,
+    fontSize: 12,
     color: '#6B7280',
+  },
+
+  primaryBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+
+  primaryText: {
+    color: '#16A34A',
+    fontWeight: '700',
     fontSize: 12,
   },
 
-  status: {
-    fontWeight: '700',
+  actionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 12,
+    gap: 10,
+  },
+
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+
+  actionText: {
+    marginLeft: 6,
+    color: '#374151',
+    fontWeight: '600',
+  },
+
+  removeText: {
+    color: '#DC2626',
+  },
+
+  pressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.99 }],
   },
 
   empty: {
     alignItems: 'center',
     marginTop: 40,
+    paddingHorizontal: 24,
+  },
+
+  emptyTitle: {
+    marginTop: 12,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+  },
+
+  emptySub: {
+    marginTop: 6,
+    textAlign: 'center',
+    color: '#6B7280',
+  },
+
+  primaryBtn: {
+    marginTop: 16,
+    backgroundColor: '#16A34A',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+
+  primaryBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+
+  footer: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
   },
 
 });
