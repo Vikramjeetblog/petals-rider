@@ -21,9 +21,19 @@ export default function NotificationsScreen({ navigation }) {
           <Text style={styles.time}>{item.time}</Text>
         </View>
       </View>
-      <Pressable style={styles.cta}>
+      <Pressable
+        style={styles.cta}
+        onPress={() => navigation.navigate('NotificationDetail', { notification: item })}
+      >
         <Text style={styles.ctaText}>View</Text>
       </Pressable>
+    </View>
+  );
+
+  const renderHeader = () => (
+    <View style={styles.headerSummary}>
+      <Text style={styles.headerSummaryTitle}>Today</Text>
+      <Text style={styles.headerSummarySub}>Stay on top of your deliveries and payouts.</Text>
     </View>
   );
 
@@ -43,6 +53,7 @@ export default function NotificationsScreen({ navigation }) {
         data={mockNotifications}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        ListHeaderComponent={renderHeader}
         contentContainerStyle={{ padding: 16 }}
         ListEmptyComponent={() => (
           <View style={styles.empty}>
@@ -76,6 +87,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     elevation: 2,
   },
+  headerSummary: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  headerSummaryTitle: { fontWeight: '800', color: '#166534' },
+  headerSummarySub: { marginTop: 6, color: '#166534' },
   row: { flexDirection: 'row', alignItems: 'center' },
   iconBadge: {
     width: 40,

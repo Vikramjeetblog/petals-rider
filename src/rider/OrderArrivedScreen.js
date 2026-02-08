@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-export default function OrderEnRouteScreen({ navigation, route }) {
+export default function OrderArrivedScreen({ navigation, route }) {
   const order = route?.params?.order;
 
   return (
@@ -13,7 +13,7 @@ export default function OrderEnRouteScreen({ navigation, route }) {
           <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={styles.backBtn}>
             <Icon name="arrow-back" size={22} color="#fff" />
           </Pressable>
-          <Text style={styles.headerTitle}>En Route</Text>
+          <Text style={styles.headerTitle}>Arrived</Text>
           <View style={{ width: 36 }} />
         </View>
         <Text style={styles.headerSub}>Order #{order?.id ?? '—'}</Text>
@@ -21,28 +21,18 @@ export default function OrderEnRouteScreen({ navigation, route }) {
 
       <View style={styles.content}>
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Delivery Status</Text>
-          <Text style={styles.cardSub}>You’re on the way to the customer.</Text>
-          <View style={styles.rowBetween}>
-            <View>
-              <Text style={styles.label}>ETA</Text>
-              <Text style={styles.value}>8 mins</Text>
-            </View>
-            <View>
-              <Text style={styles.label}>Distance</Text>
-              <Text style={styles.value}>2.1 km</Text>
-            </View>
+          <Text style={styles.cardTitle}>Confirm arrival</Text>
+          <Text style={styles.cardSub}>Let us know when you reach the customer.</Text>
+          <View style={styles.checkRow}>
+            <Icon name="location" size={18} color="#16A34A" />
+            <Text style={styles.checkText}>You are at the delivery location</Text>
           </View>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Customer</Text>
-          <Text style={styles.cardSub}>{order?.drop ?? 'Customer address'}</Text>
-          <Pressable
-            style={styles.secondaryBtn}
-            onPress={() => navigation.navigate('IssueReport', { orderId: order?.id })}
-          >
-            <Text style={styles.secondaryText}>Call customer</Text>
+          <Text style={styles.cardTitle}>Need help?</Text>
+          <Pressable style={styles.secondaryBtn} onPress={() => navigation.navigate('IssueReport')}>
+            <Text style={styles.secondaryText}>Report an issue</Text>
           </Pressable>
         </View>
       </View>
@@ -50,15 +40,9 @@ export default function OrderEnRouteScreen({ navigation, route }) {
       <View style={styles.footer}>
         <Pressable
           style={styles.primaryBtn}
-          onPress={() => navigation.navigate('OrderArrived', { order })}
+          onPress={() => navigation.navigate('DeliveryProof', { order })}
         >
-          <Text style={styles.primaryText}>Reached Customer</Text>
-        </Pressable>
-        <Pressable
-          style={styles.ghostBtn}
-          onPress={() => navigation.navigate('IssueReport')}
-        >
-          <Text style={styles.ghostText}>Report Issue</Text>
+          <Text style={styles.primaryText}>Start Delivery Verification</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -89,9 +73,8 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontWeight: '700', color: '#111827' },
   cardSub: { color: '#6B7280', marginTop: 6 },
-  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
-  label: { color: '#6B7280', fontSize: 12 },
-  value: { marginTop: 6, fontWeight: '700', color: '#111827' },
+  checkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+  checkText: { marginLeft: 8, color: '#111827' },
   secondaryBtn: {
     marginTop: 12,
     backgroundColor: '#DCFCE7',
@@ -108,13 +91,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryText: { color: '#fff', fontWeight: '800' },
-  ghostBtn: {
-    marginTop: 10,
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FCA5A5',
-  },
-  ghostText: { color: '#DC2626', fontWeight: '700' },
 });

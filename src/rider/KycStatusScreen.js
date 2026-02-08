@@ -4,10 +4,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const steps = [
-  { id: 'aadhaar', title: 'Upload Aadhaar', status: 'Pending' },
-  { id: 'license', title: 'Driving License', status: 'Approved' },
-  { id: 'rc', title: 'Vehicle RC', status: 'Pending' },
-  { id: 'selfie', title: 'Selfie Verification', status: 'Not started' },
+  { id: 'aadhaar', title: 'Upload Aadhaar', status: 'Pending', type: 'Aadhaar' },
+  { id: 'license', title: 'Driving License', status: 'Approved', type: 'Driving License' },
+  { id: 'rc', title: 'Vehicle RC', status: 'Pending', type: 'Vehicle RC' },
+  { id: 'selfie', title: 'Selfie Verification', status: 'Not started', type: 'Selfie' },
 ];
 
 export default function KycStatusScreen({ navigation }) {
@@ -41,16 +41,26 @@ export default function KycStatusScreen({ navigation }) {
               <Text style={styles.stepTitle}>{step.title}</Text>
               <Text style={styles.stepSub}>Status: {step.status}</Text>
             </View>
-            <Pressable style={styles.stepBtn}>
-              <Text style={styles.stepBtnText}>Upload</Text>
+            <Pressable
+              style={styles.stepBtn}
+              onPress={() =>
+                navigation.navigate(
+                  step.id === 'selfie' ? 'KycSelfie' : 'KycDocumentUpload',
+                  step.id === 'selfie' ? undefined : { type: step.type }
+                )
+              }
+            >
+              <Text style={styles.stepBtnText}>
+                {step.id === 'selfie' ? 'Capture' : 'Upload'}
+              </Text>
             </Pressable>
           </View>
         ))}
 
-        <View style={styles.helpCard}>
+        <Pressable style={styles.helpCard} onPress={() => navigation.navigate('SupportCenter')}>
           <Icon name="help-circle-outline" size={20} color="#16A34A" />
           <Text style={styles.helpText}>Need help? Contact support for verification assistance.</Text>
-        </View>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
