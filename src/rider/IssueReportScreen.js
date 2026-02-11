@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, Pressable } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TextInput, Pressable, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -14,6 +14,22 @@ const issues = [
 export default function IssueReportScreen({ navigation }) {
   const [selected, setSelected] = useState(issues[0]);
   const [notes, setNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      Alert.alert('Issue submitted', `Support has received: ${selected}`, [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -56,8 +72,8 @@ export default function IssueReportScreen({ navigation }) {
       </View>
 
       <View style={styles.footer}>
-        <Pressable style={styles.primaryBtn}>
-          <Text style={styles.primaryText}>Submit Issue</Text>
+        <Pressable style={[styles.primaryBtn, isSubmitting && styles.primaryBtnDisabled]} onPress={handleSubmit}>
+          <Text style={styles.primaryText}>{isSubmitting ? 'Submitting...' : 'Submit Issue'}</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -109,6 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
   },
+  primaryBtnDisabled: { opacity: 0.7 },
   primaryText: { color: '#fff', fontWeight: '800' },
   pressed: { opacity: 0.85 },
 });

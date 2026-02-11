@@ -10,7 +10,7 @@ export default function DeliverySummaryScreen({ navigation, route }) {
     <SafeAreaView style={styles.container}>
       <LinearGradient colors={['#16A34A', '#22C55E']} style={styles.header}>
         <View style={styles.headerRow}>
-          <Pressable onPress={() => navigation.popToTop()} hitSlop={10} style={styles.backBtn}>
+          <Pressable onPress={() => navigation.navigate('RiderTabs')} hitSlop={10} style={styles.backBtn}>
             <Icon name="close" size={22} color="#fff" />
           </Pressable>
           <Text style={styles.headerTitle}>Delivery Summary</Text>
@@ -33,7 +33,7 @@ export default function DeliverySummaryScreen({ navigation, route }) {
       </View>
 
       <View style={styles.footer}>
-        <Pressable style={styles.primaryBtn} onPress={() => navigation.popToTop()}>
+        <Pressable style={styles.primaryBtn} onPress={() => navigation.navigate('RiderTabs')}>
           <Text style={styles.primaryText}>Back to Deliveries</Text>
         </Pressable>
       </View>

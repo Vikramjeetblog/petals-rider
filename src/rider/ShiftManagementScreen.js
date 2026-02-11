@@ -1,9 +1,48 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function ShiftManagementScreen({ navigation }) {
+  const [isShiftActive, setIsShiftActive] = useState(true);
+  const [isBreakActive, setIsBreakActive] = useState(false);
+  const [breakMinutes, setBreakMinutes] = useState(15);
+
+  const statusLabel = useMemo(() => {
+    if (!isShiftActive) return 'Ended';
+    if (isBreakActive) return 'On Break';
+    return 'Active';
+  }, [isBreakActive, isShiftActive]);
+
+  const handleShiftToggle = () => {
+    if (isShiftActive) {
+      setIsShiftActive(false);
+      setIsBreakActive(false);
+      Alert.alert('Shift Ended', 'Your shift has been marked as completed.');
+      return;
+    }
+
+    setIsShiftActive(true);
+    Alert.alert('Shift Started', 'You are live and ready for deliveries.');
+  };
+
+  const handleBreakToggle = () => {
+    if (!isShiftActive) {
+      Alert.alert('Shift not active', 'Start shift before taking a break.');
+      return;
+    }
+
+    if (isBreakActive) {
+      setIsBreakActive(false);
+      Alert.alert('Break Ended', 'Welcome back! New orders will now be assigned.');
+      return;
+    }
+
+    setIsBreakActive(true);
+    setBreakMinutes((prev) => Math.min(prev + 15, 60));
+    Alert.alert('Break Started', 'Break timer started for 15 minutes.');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient colors={['#16A34A', '#22C55E']} style={styles.header}>
@@ -24,10 +63,10 @@ export default function ShiftManagementScreen({ navigation }) {
           <View style={styles.rowBetween}>
             <View>
               <Text style={styles.label}>Status</Text>
-              <Text style={styles.status}>Active</Text>
+              <Text style={styles.status}>{statusLabel}</Text>
             </View>
-            <Pressable style={styles.primaryBtn}>
-              <Text style={styles.primaryText}>End Shift</Text>
+            <Pressable style={styles.primaryBtn} onPress={handleShiftToggle}>
+              <Text style={styles.primaryText}>{isShiftActive ? 'End Shift' : 'Start Shift'}</Text>
             </Pressable>
           </View>
         </View>
@@ -35,8 +74,8 @@ export default function ShiftManagementScreen({ navigation }) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Breaks</Text>
           <Text style={styles.subText}>You can take up to 2 breaks of 15 minutes.</Text>
-          <Pressable style={styles.secondaryBtn}>
-            <Text style={styles.secondaryText}>Start Break</Text>
+          <Pressable style={styles.secondaryBtn} onPress={handleBreakToggle}>
+            <Text style={styles.secondaryText}>{isBreakActive ? 'End Break' : 'Start Break'}</Text>
           </Pressable>
         </View>
 
@@ -45,11 +84,11 @@ export default function ShiftManagementScreen({ navigation }) {
           <View style={styles.rowBetween}>
             <View>
               <Text style={styles.label}>Hours worked</Text>
-              <Text style={styles.statValue}>6h 15m</Text>
+              <Text style={styles.statValue}>{isShiftActive ? '6h 15m' : '8h 00m'}</Text>
             </View>
             <View>
               <Text style={styles.label}>Break time</Text>
-              <Text style={styles.statValue}>15m</Text>
+              <Text style={styles.statValue}>{breakMinutes}m</Text>
             </View>
           </View>
         </View>
@@ -86,9 +125,16 @@ const styles = StyleSheet.create({
   label: { color: '#6B7280', fontSize: 12 },
   status: { fontWeight: '700', color: '#16A34A', marginTop: 4 },
   subText: { color: '#6B7280', marginTop: 6 },
-  primaryBtn: { backgroundColor: '#DC2626', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
+  primaryBtn: { backgroundColor: '#16A34A', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
   primaryText: { color: '#fff', fontWeight: '700' },
-  secondaryBtn: { marginTop: 12, backgroundColor: '#16A34A', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
-  secondaryText: { color: '#fff', fontWeight: '700' },
-  statValue: { marginTop: 6, fontWeight: '700', color: '#111827' },
+  secondaryBtn: {
+    alignSelf: 'flex-start',
+    marginTop: 12,
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+  },
+  secondaryText: { color: '#166534', fontWeight: '700' },
+  statValue: { marginTop: 6, fontSize: 20, fontWeight: '800', color: '#111827' },
 });
