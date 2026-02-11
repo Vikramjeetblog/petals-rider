@@ -15,6 +15,8 @@ const routeByItemId = {
   kyc: 'KycStatus',
   permissions: 'PermissionsSetup',
   bank: 'BankAccount',
+  profile: 'EditProfile',
+  training: 'SafetyTraining',
 };
 
 export default function OnboardingChecklistScreen({ navigation }) {

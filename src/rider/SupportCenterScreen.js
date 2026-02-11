@@ -10,7 +10,19 @@ const topics = [
   { id: 'safety', title: 'Safety & training' },
 ];
 
+const routeByTopic = {
+  payments: 'Payout',
+  orders: 'IssueReport',
+  account: 'EditProfile',
+  safety: 'SafetyTraining',
+};
+
 export default function SupportCenterScreen({ navigation }) {
+  const handleTopicOpen = (topicId) => {
+    const target = routeByTopic[topicId] || 'IssueReport';
+    navigation.navigate(target);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient colors={['#16A34A', '#22C55E']} style={styles.header}>
@@ -28,20 +40,20 @@ export default function SupportCenterScreen({ navigation }) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Quick actions</Text>
           <View style={styles.rowBetween}>
-            <Pressable style={styles.actionBtn}>
-              <Icon name="call-outline" size={18} color="#16A34A" />
-              <Text style={styles.actionText}>Call support</Text>
+            <Pressable style={styles.actionBtn} onPress={() => navigation.navigate('IssueReport')}>
+              <Icon name="warning-outline" size={18} color="#16A34A" />
+              <Text style={styles.actionText}>Report issue</Text>
             </Pressable>
-            <Pressable style={styles.actionBtn}>
-              <Icon name="chatbubble-outline" size={18} color="#16A34A" />
-              <Text style={styles.actionText}>Chat support</Text>
+            <Pressable style={styles.actionBtn} onPress={() => navigation.navigate('SafetyTraining')}>
+              <Icon name="shield-checkmark-outline" size={18} color="#16A34A" />
+              <Text style={styles.actionText}>Safety training</Text>
             </Pressable>
           </View>
         </View>
 
         <Text style={styles.sectionTitle}>Popular topics</Text>
         {topics.map((topic) => (
-          <Pressable key={topic.id} style={styles.topicRow}>
+          <Pressable key={topic.id} style={styles.topicRow} onPress={() => handleTopicOpen(topic.id)}>
             <Text style={styles.topicText}>{topic.title}</Text>
             <Icon name="chevron-forward" size={18} color="#9CA3AF" />
           </Pressable>

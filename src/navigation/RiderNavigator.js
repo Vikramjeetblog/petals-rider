@@ -28,6 +28,7 @@ import NotificationsScreen from '../rider/NotificationsScreen';
 import NotificationDetailScreen from '../rider/NotificationDetailScreen';
 import SupportCenterScreen from '../rider/SupportCenterScreen';
 import IssueReportScreen from '../rider/IssueReportScreen';
+import SafetyTrainingScreen from '../rider/SafetyTrainingScreen';
 
 // Order lifecycle
 import OrderPickupScreen from '../rider/OrderPickupScreen';
@@ -79,6 +80,7 @@ function RiderStack() {
       <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
       <Stack.Screen name="SupportCenter" component={SupportCenterScreen} />
       <Stack.Screen name="IssueReport" component={IssueReportScreen} />
+      <Stack.Screen name="SafetyTraining" component={SafetyTrainingScreen} />
 
       {/* Order lifecycle */}
       <Stack.Screen name="OrderPickup" component={OrderPickupScreen} />

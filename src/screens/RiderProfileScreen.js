@@ -62,6 +62,38 @@ export default function RiderProfileScreen({ navigation }) {
           </View>
         </View>
 
+
+
+        <TouchableOpacity
+          style={styles.cardRow}
+          onPress={() => navigation.navigate('EditProfile')}
+          activeOpacity={0.85}
+        >
+          <View style={styles.row}>
+            <Icon name="create-outline" size={18} color="#16A34A" />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={styles.rowTitle}>Edit Profile</Text>
+              <Text style={styles.rowSub}>Update personal and vehicle details</Text>
+            </View>
+          </View>
+          <Icon name="chevron-forward" size={20} color="#9CA3AF" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.cardRow}
+          onPress={() => navigation.navigate('IssueReport')}
+          activeOpacity={0.85}
+        >
+          <View style={styles.row}>
+            <Icon name="alert-circle-outline" size={18} color="#16A34A" />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={styles.rowTitle}>Report an Issue</Text>
+              <Text style={styles.rowSub}>Share delivery, app, or payout issues</Text>
+            </View>
+          </View>
+          <Icon name="chevron-forward" size={20} color="#9CA3AF" />
+        </TouchableOpacity>
+
         {/* ✅ Payments (ONE clear option) */}
         <TouchableOpacity
           style={styles.cardRow}
