@@ -78,6 +78,36 @@ export default function RiderProfileScreen({ navigation }) {
           <Icon name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.cardRow}
+          onPress={() => navigation.navigate('ShiftManagement')}
+          activeOpacity={0.85}
+        >
+          <View style={styles.row}>
+            <Icon name="time-outline" size={18} color="#16A34A" />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={styles.rowTitle}>Shift Management</Text>
+              <Text style={styles.rowSub}>Set your active delivery schedule</Text>
+            </View>
+          </View>
+          <Icon name="chevron-forward" size={20} color="#9CA3AF" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.cardRow}
+          onPress={() => navigation.navigate('SupportCenter')}
+          activeOpacity={0.85}
+        >
+          <View style={styles.row}>
+            <Icon name="help-circle-outline" size={18} color="#16A34A" />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={styles.rowTitle}>Help & Support</Text>
+              <Text style={styles.rowSub}>Get assistance and contact support</Text>
+            </View>
+          </View>
+          <Icon name="chevron-forward" size={20} color="#9CA3AF" />
+        </TouchableOpacity>
+
         {/* Today’s Summary */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Today’s Summary</Text>

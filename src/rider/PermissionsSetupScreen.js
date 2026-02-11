@@ -64,7 +64,7 @@ export default function PermissionsSetupScreen({ navigation }) {
       </View>
 
       <View style={styles.footer}>
-        <Pressable style={styles.primaryBtn}>
+        <Pressable style={styles.primaryBtn} onPress={() => navigation.navigate('RiderTabs')}>
           <Text style={styles.primaryText}>Continue</Text>
         </Pressable>
         <Text style={styles.footerNote}>
