@@ -42,16 +42,8 @@ export default function DeliveryProofScreen({ route, navigation }) {
       // simulate backend delay
       await new Promise(res => setTimeout(res, 900));
 
-      Alert.alert(
-        'Delivery Completed ✅',
-        'Order marked as delivered.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.popToTop(),
-          },
-        ]
-      );
+      Alert.alert('Delivery Completed ✅', 'Order marked as delivered.');
+      navigation.replace('DeliverySummary', { order });
 
     } catch {
       Alert.alert('Error', 'Delivery verification failed');

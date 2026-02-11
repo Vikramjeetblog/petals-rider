@@ -3,8 +3,25 @@ import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+const routeByType = {
+  order: 'OrderDetails',
+  payout: 'Payout',
+  shift: 'ShiftManagement',
+};
+
 export default function NotificationDetailScreen({ navigation, route }) {
   const notification = route?.params?.notification;
+
+  const handleTakeAction = () => {
+    const target = routeByType[notification?.type] || 'RiderTabs';
+
+    if (target === 'OrderDetails') {
+      navigation.navigate('RiderTabs');
+      return;
+    }
+
+    navigation.navigate(target);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -28,7 +45,7 @@ export default function NotificationDetailScreen({ navigation, route }) {
           </Text>
         </View>
 
-        <Pressable style={styles.primaryBtn}>
+        <Pressable style={styles.primaryBtn} onPress={handleTakeAction}>
           <Text style={styles.primaryText}>Take Action</Text>
         </Pressable>
       </View>

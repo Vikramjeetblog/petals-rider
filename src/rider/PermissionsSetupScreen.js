@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -31,6 +31,20 @@ const permissions = [
 ];
 
 export default function PermissionsSetupScreen({ navigation }) {
+  const [enabledPermissions, setEnabledPermissions] = useState({});
+
+  const totalEnabled = useMemo(
+    () => Object.values(enabledPermissions).filter(Boolean).length,
+    [enabledPermissions]
+  );
+
+  const togglePermission = (permissionId) => {
+    setEnabledPermissions((prev) => ({
+      ...prev,
+      [permissionId]: !prev[permissionId],
+    }));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient colors={['#16A34A', '#22C55E']} style={styles.header}>
@@ -45,26 +59,33 @@ export default function PermissionsSetupScreen({ navigation }) {
       </LinearGradient>
 
       <View style={styles.content}>
-        {permissions.map((permission) => (
-          <View key={permission.id} style={styles.card}>
-            <View style={styles.cardRow}>
-              <View style={styles.iconBadge}>
-                <Icon name={permission.icon} size={20} color="#16A34A" />
+        {permissions.map((permission) => {
+          const isEnabled = Boolean(enabledPermissions[permission.id]);
+
+          return (
+            <View key={permission.id} style={styles.card}>
+              <View style={styles.cardRow}>
+                <View style={styles.iconBadge}>
+                  <Icon name={permission.icon} size={20} color="#16A34A" />
+                </View>
+                <View style={styles.cardText}>
+                  <Text style={styles.cardTitle}>{permission.title}</Text>
+                  <Text style={styles.cardSub}>{permission.description}</Text>
+                </View>
               </View>
-              <View style={styles.cardText}>
-                <Text style={styles.cardTitle}>{permission.title}</Text>
-                <Text style={styles.cardSub}>{permission.description}</Text>
-              </View>
+              <Pressable style={[styles.cta, isEnabled && styles.ctaEnabled]} onPress={() => togglePermission(permission.id)}>
+                <Text style={[styles.ctaText, isEnabled && styles.ctaTextEnabled]}>
+                  {isEnabled ? 'Enabled' : 'Enable'}
+                </Text>
+              </Pressable>
             </View>
-            <Pressable style={styles.cta}>
-              <Text style={styles.ctaText}>Enable</Text>
-            </Pressable>
-          </View>
-        ))}
+          );
+        })}
       </View>
 
       <View style={styles.footer}>
-        <Pressable style={styles.primaryBtn}>
+        <Text style={styles.progressText}>{totalEnabled}/{permissions.length} permissions enabled</Text>
+        <Pressable style={styles.primaryBtn} onPress={() => navigation.navigate('RiderTabs')}>
           <Text style={styles.primaryText}>Continue</Text>
         </Pressable>
         <Text style={styles.footerNote}>
@@ -117,8 +138,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
   },
+  ctaEnabled: { backgroundColor: '#16A34A' },
   ctaText: { color: '#16A34A', fontWeight: '700' },
+  ctaTextEnabled: { color: '#fff' },
   footer: { padding: 16, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E5E7EB' },
+  progressText: { textAlign: 'center', color: '#6B7280', marginBottom: 10 },
   primaryBtn: {
     backgroundColor: '#16A34A',
     paddingVertical: 14,
