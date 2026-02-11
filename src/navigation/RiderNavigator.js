@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -65,12 +65,15 @@ function AuthStack({ setIsLoggedIn }) {
   );
 }
 
-function RiderStack() {
+function RiderStack({ onLogout }) {
   return (
     <Stack.Navigator initialRouteName="OnboardingChecklist" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="OnboardingChecklist" component={OnboardingChecklistScreen} />
 
-      <Stack.Screen name="RiderTabs" component={RiderTabs} />
+      <Stack.Screen name="RiderTabs">
+        {(props) => <RiderTabs {...props} onLogout={onLogout} />}
+      </Stack.Screen>
+
       <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
       <Stack.Screen name="OrderPickup" component={OrderPickupScreen} />
       <Stack.Screen name="OrderEnRoute" component={OrderEnRouteScreen} />
@@ -129,7 +132,7 @@ export default function RiderNavigator() {
 
   if (isHydrating) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F9FAFB' }}>
+      <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#16A34A" />
       </View>
     );
@@ -140,10 +143,19 @@ export default function RiderNavigator() {
       {!hasSeenIntro ? (
         <IntroStack onComplete={completeIntro} />
       ) : isLoggedIn ? (
-        <RiderStack />
+        <RiderStack onLogout={() => setIsLoggedIn(false)} />
       ) : (
         <AuthStack setIsLoggedIn={setIsLoggedIn} />
       )}
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
+  },
+});

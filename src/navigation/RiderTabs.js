@@ -10,19 +10,15 @@ import ActivityScreen from '../rider/ActivityScreen';
 
 const Tab = createBottomTabNavigator();
 
-export default function RiderTabs() {
+export default function RiderTabs({ onLogout }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-
         tabBarActiveTintColor: '#16A34A',
         tabBarInactiveTintColor: '#9CA3AF',
-
         tabBarStyle: styles.tabBar,
-
         tabBarLabelStyle: styles.label,
-
         tabBarIcon: ({ focused, color, size }) => {
           let icon;
 
@@ -30,18 +26,17 @@ export default function RiderTabs() {
             case 'Deliveries':
               icon = focused ? 'bicycle' : 'bicycle-outline';
               break;
-
             case 'Earnings':
               icon = focused ? 'wallet' : 'wallet-outline';
               break;
-
             case 'Activity':
               icon = focused ? 'list' : 'list-outline';
               break;
-
             case 'Profile':
               icon = focused ? 'person' : 'person-outline';
               break;
+            default:
+              icon = 'ellipse-outline';
           }
 
           return (
@@ -52,31 +47,17 @@ export default function RiderTabs() {
         },
       })}
     >
-      <Tab.Screen
-        name="Deliveries"
-        component={RiderDashboardScreen}
-      />
-
-      <Tab.Screen
-        name="Earnings"
-        component={EarningsScreen}
-      />
-
-      <Tab.Screen
-        name="Activity"
-        component={ActivityScreen}
-      />
-
-      <Tab.Screen
-        name="Profile"
-        component={RiderProfileScreen}
-      />
+      <Tab.Screen name="Deliveries" component={RiderDashboardScreen} />
+      <Tab.Screen name="Earnings" component={EarningsScreen} />
+      <Tab.Screen name="Activity" component={ActivityScreen} />
+      <Tab.Screen name="Profile">
+        {(props) => <RiderProfileScreen {...props} onLogout={onLogout} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
 
 const styles = StyleSheet.create({
-
   tabBar: {
     height: 68,
     paddingBottom: 10,
@@ -84,16 +65,13 @@ const styles = StyleSheet.create({
     elevation: 10,
     backgroundColor: '#FFFFFF',
   },
-
   label: {
     fontSize: 11,
     fontWeight: '600',
   },
-
   activeIcon: {
     backgroundColor: '#DCFCE7',
     padding: 6,
     borderRadius: 14,
   },
-
 });
