@@ -1,10 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function OrderPickupScreen({ navigation, route }) {
   const order = route?.params?.order;
+  const [pickupOtpVerified, setPickupOtpVerified] = useState(false);
+
+  const verifyPickupOtp = () => {
+    setPickupOtpVerified(true);
+    Alert.alert('Pickup OTP verified', 'You can now proceed to customer location.');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -36,16 +42,19 @@ export default function OrderPickupScreen({ navigation, route }) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Pickup OTP</Text>
           <Text style={styles.cardSub}>Ask store staff for pickup OTP.</Text>
-          <Pressable style={styles.secondaryBtn}>
-            <Text style={styles.secondaryText}>Enter OTP</Text>
+          <Pressable style={[styles.secondaryBtn, pickupOtpVerified && styles.secondaryBtnVerified]} onPress={verifyPickupOtp}>
+            <Text style={[styles.secondaryText, pickupOtpVerified && styles.secondaryTextVerified]}>
+              {pickupOtpVerified ? 'OTP Verified' : 'Enter OTP'}
+            </Text>
           </Pressable>
         </View>
       </View>
 
       <View style={styles.footer}>
         <Pressable
-          style={styles.primaryBtn}
+          style={[styles.primaryBtn, !pickupOtpVerified && styles.primaryBtnDisabled]}
           onPress={() => navigation.navigate('OrderEnRoute', { order })}
+          disabled={!pickupOtpVerified}
         >
           <Text style={styles.primaryText}>Confirm Pickup</Text>
         </Pressable>
@@ -87,7 +96,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
+  secondaryBtnVerified: { backgroundColor: '#16A34A' },
   secondaryText: { color: '#16A34A', fontWeight: '700' },
+  secondaryTextVerified: { color: '#fff' },
   footer: { padding: 16, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E5E7EB' },
   primaryBtn: {
     backgroundColor: '#16A34A',
@@ -95,5 +106,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
   },
+  primaryBtnDisabled: { backgroundColor: '#9CA3AF' },
   primaryText: { color: '#fff', fontWeight: '800' },
 });

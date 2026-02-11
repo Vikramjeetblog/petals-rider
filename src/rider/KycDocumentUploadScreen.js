@@ -1,10 +1,27 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function KycDocumentUploadScreen({ navigation, route }) {
   const documentType = route?.params?.type ?? 'Document';
+  const [isFileSelected, setIsFileSelected] = useState(false);
+
+  const handleChooseFile = () => {
+    setIsFileSelected(true);
+    Alert.alert('File selected', `${documentType} file ready to upload.`);
+  };
+
+  const handleSubmit = () => {
+    if (!isFileSelected) {
+      Alert.alert('Missing file', `Please choose your ${documentType} first.`);
+      return;
+    }
+
+    Alert.alert('Submitted', `${documentType} sent for KYC review.`, [
+      { text: 'OK', onPress: () => navigation.goBack() },
+    ]);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -24,8 +41,10 @@ export default function KycDocumentUploadScreen({ navigation, route }) {
           <Icon name="document-text-outline" size={32} color="#16A34A" />
           <Text style={styles.cardTitle}>Upload {documentType}</Text>
           <Text style={styles.cardSub}>Make sure the document details are readable.</Text>
-          <Pressable style={styles.secondaryBtn}>
-            <Text style={styles.secondaryText}>Choose file</Text>
+          <Pressable style={[styles.secondaryBtn, isFileSelected && styles.secondaryBtnSelected]} onPress={handleChooseFile}>
+            <Text style={[styles.secondaryText, isFileSelected && styles.secondaryTextSelected]}>
+              {isFileSelected ? 'File Selected' : 'Choose file'}
+            </Text>
           </Pressable>
         </View>
 
@@ -38,7 +57,7 @@ export default function KycDocumentUploadScreen({ navigation, route }) {
       </View>
 
       <View style={styles.footer}>
-        <Pressable style={styles.primaryBtn}>
+        <Pressable style={styles.primaryBtn} onPress={handleSubmit}>
           <Text style={styles.primaryText}>Submit for review</Text>
         </Pressable>
       </View>
@@ -78,7 +97,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 12,
   },
+  secondaryBtnSelected: { backgroundColor: '#16A34A' },
   secondaryText: { color: '#16A34A', fontWeight: '700' },
+  secondaryTextSelected: { color: '#fff' },
   footer: { padding: 16, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E5E7EB' },
   primaryBtn: {
     backgroundColor: '#16A34A',

@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import RiderTabs from './RiderTabs';
+
+// Intro screen
+import IntroOnboardingScreen from '../screens/IntroOnboardingScreen';
 
 // Auth screens
 import RiderLoginScreen from '../screens/auth/RiderLoginScreen';
@@ -36,9 +41,19 @@ import OrderEnRouteScreen from '../rider/OrderEnRouteScreen';
 import OrderArrivedScreen from '../rider/OrderArrivedScreen';
 import DeliverySummaryScreen from '../rider/DeliverySummaryScreen';
 
+const INTRO_STORAGE_KEY = '@petals_rider_intro_completed';
 const Stack = createNativeStackNavigator();
 
-// 🔐 Auth Stack
+function IntroStack({ onComplete }) {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="IntroOnboarding">
+        {(props) => <IntroOnboardingScreen {...props} onComplete={onComplete} />}
+      </Stack.Screen>
+    </Stack.Navigator>
+  );
+}
+
 function AuthStack({ setIsLoggedIn }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -50,27 +65,24 @@ function AuthStack({ setIsLoggedIn }) {
   );
 }
 
-// 🏍 Rider Stack (Tabs + Detail Screens)
 function RiderStack() {
   return (
     <Stack.Navigator initialRouteName="OnboardingChecklist" screenOptions={{ headerShown: false }}>
-      {/* Onboarding entry */}
       <Stack.Screen name="OnboardingChecklist" component={OnboardingChecklistScreen} />
 
-      {/* Main app */}
       <Stack.Screen name="RiderTabs" component={RiderTabs} />
       <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
+      <Stack.Screen name="OrderPickup" component={OrderPickupScreen} />
+      <Stack.Screen name="OrderEnRoute" component={OrderEnRouteScreen} />
+      <Stack.Screen name="OrderArrived" component={OrderArrivedScreen} />
       <Stack.Screen name="DeliveryProof" component={DeliveryProofScreen} />
+      <Stack.Screen name="DeliverySummary" component={DeliverySummaryScreen} />
       <Stack.Screen name="EditProfile" component={EditRiderProfileScreen} />
 
-      {/* Earnings → Payout flow */}
       <Stack.Screen name="Payout" component={RiderPayoutScreen} />
-
-      {/* Bank details flow (for withdrawal) */}
       <Stack.Screen name="BankAccount" component={BankAccountScreen} />
       <Stack.Screen name="AddBankAccount" component={AddBankAccountScreen} />
 
-      {/* Onboarding & utilities */}
       <Stack.Screen name="PermissionsSetup" component={PermissionsSetupScreen} />
       <Stack.Screen name="KycStatus" component={KycStatusScreen} />
       <Stack.Screen name="KycDocumentUpload" component={KycDocumentUploadScreen} />
@@ -81,23 +93,57 @@ function RiderStack() {
       <Stack.Screen name="SupportCenter" component={SupportCenterScreen} />
       <Stack.Screen name="IssueReport" component={IssueReportScreen} />
       <Stack.Screen name="SafetyTraining" component={SafetyTrainingScreen} />
-
-      {/* Order lifecycle */}
-      <Stack.Screen name="OrderPickup" component={OrderPickupScreen} />
-      <Stack.Screen name="OrderEnRoute" component={OrderEnRouteScreen} />
-      <Stack.Screen name="OrderArrived" component={OrderArrivedScreen} />
-      <Stack.Screen name="DeliverySummary" component={DeliverySummaryScreen} />
     </Stack.Navigator>
   );
 }
 
-// 🌍 Root Navigator
 export default function RiderNavigator() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasSeenIntro, setHasSeenIntro] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(true);
+
+  useEffect(() => {
+    const hydrateNavigationState = async () => {
+      try {
+        const introDone = await AsyncStorage.getItem(INTRO_STORAGE_KEY);
+        setHasSeenIntro(introDone === 'true');
+      } catch {
+        setHasSeenIntro(false);
+      } finally {
+        setIsHydrating(false);
+      }
+    };
+
+    hydrateNavigationState();
+  }, []);
+
+  const completeIntro = async () => {
+    try {
+      await AsyncStorage.setItem(INTRO_STORAGE_KEY, 'true');
+    } catch {
+      // no-op for offline/dev fallback
+    }
+
+    setHasSeenIntro(true);
+  };
+
+  if (isHydrating) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F9FAFB' }}>
+        <ActivityIndicator size="large" color="#16A34A" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
-      {isLoggedIn ? <RiderStack /> : <AuthStack setIsLoggedIn={setIsLoggedIn} />}
+      {!hasSeenIntro ? (
+        <IntroStack onComplete={completeIntro} />
+      ) : isLoggedIn ? (
+        <RiderStack />
+      ) : (
+        <AuthStack setIsLoggedIn={setIsLoggedIn} />
+      )}
     </NavigationContainer>
   );
 }

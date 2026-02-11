@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Pressable, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -10,6 +10,18 @@ const modules = [
 ];
 
 export default function SafetyTrainingScreen({ navigation }) {
+  const [completedModules, setCompletedModules] = useState({});
+
+  const completeModule = (moduleId) => {
+    setCompletedModules((prev) => ({
+      ...prev,
+      [moduleId]: true,
+    }));
+  };
+
+  const completedCount = Object.values(completedModules).filter(Boolean).length;
+  const allDone = completedCount === modules.length;
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient colors={['#16A34A', '#22C55E']} style={styles.header}>
@@ -24,20 +36,28 @@ export default function SafetyTrainingScreen({ navigation }) {
       </LinearGradient>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {modules.map((module) => (
-          <View key={module.id} style={styles.card}>
-            <View style={styles.cardInfo}>
-              <Text style={styles.cardTitle}>{module.title}</Text>
-              <Text style={styles.cardSub}>Estimated time: {module.duration}</Text>
-            </View>
-            <Pressable style={styles.cta}>
-              <Text style={styles.ctaText}>Start</Text>
-            </Pressable>
-          </View>
-        ))}
+        {modules.map((module) => {
+          const isDone = Boolean(completedModules[module.id]);
 
-        <Pressable style={styles.primaryBtn} onPress={() => navigation.navigate('RiderTabs')}>
-          <Text style={styles.primaryText}>Done, Go to Dashboard</Text>
+          return (
+            <View key={module.id} style={styles.card}>
+              <View style={styles.cardInfo}>
+                <Text style={styles.cardTitle}>{module.title}</Text>
+                <Text style={styles.cardSub}>Estimated time: {module.duration}</Text>
+              </View>
+              <Pressable style={[styles.cta, isDone && styles.ctaDone]} onPress={() => completeModule(module.id)}>
+                <Text style={[styles.ctaText, isDone && styles.ctaTextDone]}>
+                  {isDone ? 'Completed' : 'Start'}
+                </Text>
+              </Pressable>
+            </View>
+          );
+        })}
+
+        <Text style={styles.progressText}>{completedCount}/{modules.length} modules completed</Text>
+
+        <Pressable style={[styles.primaryBtn, !allDone && styles.primaryBtnDisabled]} onPress={() => navigation.navigate('RiderTabs')}>
+          <Text style={styles.primaryText}>{allDone ? 'Done, Go to Dashboard' : 'Skip for now'}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -78,7 +98,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
   },
+  ctaDone: { backgroundColor: '#16A34A' },
   ctaText: { color: '#16A34A', fontWeight: '700' },
+  ctaTextDone: { color: '#fff' },
+  progressText: { textAlign: 'center', color: '#6B7280', marginVertical: 10 },
   primaryBtn: {
     marginTop: 8,
     backgroundColor: '#16A34A',
@@ -86,5 +109,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
   },
+  primaryBtnDisabled: { opacity: 0.7 },
   primaryText: { color: '#fff', fontWeight: '800' },
 });

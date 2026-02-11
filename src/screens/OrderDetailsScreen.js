@@ -119,7 +119,7 @@ export default function OrderDetailsScreen({ route, navigation }) {
         <TouchableOpacity
           style={styles.primaryBtn}
           onPress={() =>
-            navigation.navigate('DeliveryProof', { order })
+            navigation.navigate('OrderPickup', { order })
           }
         >
           <Text style={styles.actionText}>
