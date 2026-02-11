@@ -11,7 +11,20 @@ const checklist = [
   { id: 'training', title: 'Safety training', status: 'Not started' },
 ];
 
+const routeByItemId = {
+  kyc: 'KycStatus',
+  permissions: 'PermissionsSetup',
+  bank: 'BankAccount',
+  profile: 'EditProfile',
+  training: 'SafetyTraining',
+};
+
 export default function OnboardingChecklistScreen({ navigation }) {
+  const handleOpenItem = (itemId) => {
+    const target = routeByItemId[itemId] || 'RiderTabs';
+    navigation.navigate(target);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient colors={['#16A34A', '#22C55E']} style={styles.header}>
@@ -37,11 +50,15 @@ export default function OnboardingChecklistScreen({ navigation }) {
                 <Text style={styles.cardSub}>Status: {item.status}</Text>
               </View>
             </View>
-            <Pressable style={styles.cta}>
+            <Pressable style={styles.cta} onPress={() => handleOpenItem(item.id)}>
               <Text style={styles.ctaText}>Open</Text>
             </Pressable>
           </View>
         ))}
+
+        <Pressable style={styles.primaryBtn} onPress={() => navigation.navigate('RiderTabs')}>
+          <Text style={styles.primaryText}>Skip for now & Go to Dashboard</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -90,4 +107,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   ctaText: { color: '#16A34A', fontWeight: '700' },
+  primaryBtn: {
+    marginTop: 8,
+    backgroundColor: '#16A34A',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  primaryText: { color: '#fff', fontWeight: '800' },
 });
