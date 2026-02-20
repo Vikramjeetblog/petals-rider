@@ -7,12 +7,17 @@ import {
   TouchableOpacity,
   Keyboard,
   SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+import { requestRiderOtp } from '../../services/riderApi';
+
 export default function RiderLoginScreen({ navigation }) {
   const [phone, setPhone] = useState('');
+  const [sendingOtp, setSendingOtp] = useState(false);
 
   const handlePhoneChange = (text) => {
     const digits = text.replace(/[^0-9]/g, '');
@@ -21,21 +26,32 @@ export default function RiderLoginScreen({ navigation }) {
 
   const isValid = phone.length === 10;
 
-  const handleContinue = () => {
-    if (!isValid) return;
+  const handleContinue = async () => {
+    if (!isValid || sendingOtp) return;
 
     Keyboard.dismiss();
 
-    navigation.navigate('RiderOtp', {
-      phone: phone.trim(),
-      role: 'RIDER',
-    });
+    try {
+      setSendingOtp(true);
+      await requestRiderOtp(phone.trim());
+
+      navigation.navigate('RiderOtp', {
+        phone: phone.trim(),
+        role: 'RIDER',
+      });
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        'Unable to send OTP right now. Please try again.';
+
+      Alert.alert('OTP Error', message);
+    } finally {
+      setSendingOtp(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-
-      {/* Gradient Header */}
       <LinearGradient
         colors={['#16A34A', '#22C55E']}
         style={styles.header}
@@ -47,14 +63,11 @@ export default function RiderLoginScreen({ navigation }) {
         </Text>
       </LinearGradient>
 
-      {/* Content */}
       <View style={styles.content}>
-
         <Text style={styles.title}>
           Enter mobile number
         </Text>
 
-        {/* Phone Input */}
         <View style={styles.inputWrapper}>
           <Text style={styles.code}>+91</Text>
 
@@ -70,35 +83,35 @@ export default function RiderLoginScreen({ navigation }) {
           <Icon name="call" size={18} color="#6B7280" />
         </View>
 
-        {/* Continue Button */}
         <TouchableOpacity
           style={[
             styles.button,
-            !isValid && styles.buttonDisabled,
+            (!isValid || sendingOtp) && styles.buttonDisabled,
           ]}
-          disabled={!isValid}
+          disabled={!isValid || sendingOtp}
           onPress={handleContinue}
         >
-          <Text style={styles.buttonText}>
-            Continue
-          </Text>
-
-          <Icon name="arrow-forward" size={18} color="#fff" />
+          {sendingOtp ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Text style={styles.buttonText}>
+                Continue
+              </Text>
+              <Icon name="arrow-forward" size={18} color="#fff" />
+            </>
+          )}
         </TouchableOpacity>
 
-        {/* Footer Info */}
         <Text style={styles.footer}>
           By continuing, you agree to Rider Terms.
         </Text>
-
       </View>
-
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
@@ -184,5 +197,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
   },
-
 });

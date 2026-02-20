@@ -5,24 +5,17 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import RiderTabs from './RiderTabs';
 
-// Intro screen
-import IntroOnboardingScreen from '../screens/IntroOnboardingScreen';
+import { setAuthToken } from '../services/riderApi';
 
-// Auth screens
+import IntroOnboardingScreen from '../screens/IntroOnboardingScreen';
 import RiderLoginScreen from '../screens/auth/RiderLoginScreen';
 import RiderOtpScreen from '../screens/auth/RiderOtpScreen';
-
-// Core detail screens
 import OrderDetailsScreen from '../screens/OrderDetailsScreen';
 import DeliveryProofScreen from '../screens/DeliveryProofScreen';
 import EditRiderProfileScreen from '../rider/EditRiderProfileScreen';
-
-// Payout flow screens
 import RiderPayoutScreen from '../rider/RiderPayoutScreen';
 import BankAccountScreen from '../rider/BankAccountScreen';
 import AddBankAccountScreen from '../rider/AddBankAccountScreen';
-
-// Onboarding & utilities
 import PermissionsSetupScreen from '../rider/PermissionsSetupScreen';
 import KycStatusScreen from '../rider/KycStatusScreen';
 import KycDocumentUploadScreen from '../rider/KycDocumentUploadScreen';
@@ -34,14 +27,13 @@ import NotificationDetailScreen from '../rider/NotificationDetailScreen';
 import SupportCenterScreen from '../rider/SupportCenterScreen';
 import IssueReportScreen from '../rider/IssueReportScreen';
 import SafetyTrainingScreen from '../rider/SafetyTrainingScreen';
-
-// Order lifecycle
 import OrderPickupScreen from '../rider/OrderPickupScreen';
 import OrderEnRouteScreen from '../rider/OrderEnRouteScreen';
 import OrderArrivedScreen from '../rider/OrderArrivedScreen';
 import DeliverySummaryScreen from '../rider/DeliverySummaryScreen';
 
 const INTRO_STORAGE_KEY = '@petals_rider_intro_completed';
+const AUTH_TOKEN_STORAGE_KEY = '@petals_rider_auth_token';
 const Stack = createNativeStackNavigator();
 
 function IntroStack({ onComplete }) {
@@ -54,12 +46,12 @@ function IntroStack({ onComplete }) {
   );
 }
 
-function AuthStack({ setIsLoggedIn }) {
+function AuthStack({ onLogin }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="RiderLogin" component={RiderLoginScreen} />
       <Stack.Screen name="RiderOtp">
-        {(props) => <RiderOtpScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+        {(props) => <RiderOtpScreen {...props} onLogin={onLogin} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
@@ -108,10 +100,20 @@ export default function RiderNavigator() {
   useEffect(() => {
     const hydrateNavigationState = async () => {
       try {
-        const introDone = await AsyncStorage.getItem(INTRO_STORAGE_KEY);
+        const [introDone, storedToken] = await Promise.all([
+          AsyncStorage.getItem(INTRO_STORAGE_KEY),
+          AsyncStorage.getItem(AUTH_TOKEN_STORAGE_KEY),
+        ]);
+
         setHasSeenIntro(introDone === 'true');
+
+        if (storedToken) {
+          setAuthToken(storedToken);
+          setIsLoggedIn(true);
+        }
       } catch {
         setHasSeenIntro(false);
+        setIsLoggedIn(false);
       } finally {
         setIsHydrating(false);
       }
@@ -130,6 +132,27 @@ export default function RiderNavigator() {
     setHasSeenIntro(true);
   };
 
+  const handleLogin = async token => {
+    try {
+      await AsyncStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+    } catch {
+      // no-op fallback
+    }
+
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    } catch {
+      // no-op fallback
+    }
+
+    setAuthToken(null);
+    setIsLoggedIn(false);
+  };
+
   if (isHydrating) {
     return (
       <View style={styles.loaderContainer}>
@@ -143,9 +166,9 @@ export default function RiderNavigator() {
       {!hasSeenIntro ? (
         <IntroStack onComplete={completeIntro} />
       ) : isLoggedIn ? (
-        <RiderStack onLogout={() => setIsLoggedIn(false)} />
+        <RiderStack onLogout={handleLogout} />
       ) : (
-        <AuthStack setIsLoggedIn={setIsLoggedIn} />
+        <AuthStack onLogin={handleLogin} />
       )}
     </NavigationContainer>
   );
