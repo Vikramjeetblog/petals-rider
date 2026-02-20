@@ -12,9 +12,11 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+import { setAuthToken, verifyRiderOtp } from '../../services/riderApi';
+
 export default function RiderOtpScreen({
   route,
-  setIsLoggedIn,
+  onLogin,
 }) {
   const { phone } = route.params || {};
 
@@ -34,20 +36,25 @@ export default function RiderOtpScreen({
     try {
       setLoading(true);
 
-      // DEV OTP
-      if (__DEV__ && otp !== '1234') {
-        Alert.alert('Invalid OTP', 'Use 1234');
-        setLoading(false);
+      const response = await verifyRiderOtp({
+        phone,
+        otp,
+      });
+
+      const token = response?.data?.token;
+
+      if (!token) {
+        Alert.alert('Verification Failed', 'Missing auth token in response');
         return;
       }
 
-      await new Promise(res => setTimeout(res, 800));
-
-      // ✅ SWITCH ROOT NAVIGATOR
-      setIsLoggedIn(true);
-
-    } catch {
-      Alert.alert('Verification Failed');
+      setAuthToken(token);
+      await onLogin(token);
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        'OTP verification failed. Please try again.';
+      Alert.alert('Verification Failed', message);
     } finally {
       setLoading(false);
     }
@@ -55,7 +62,6 @@ export default function RiderOtpScreen({
 
   return (
     <SafeAreaView style={styles.container}>
-
       <LinearGradient
         colors={['#16A34A', '#22C55E']}
         style={styles.header}
@@ -68,7 +74,6 @@ export default function RiderOtpScreen({
       </LinearGradient>
 
       <View style={styles.content}>
-
         <Text style={styles.title}>Enter OTP</Text>
 
         <TextInput
@@ -79,8 +84,6 @@ export default function RiderOtpScreen({
           style={styles.otpInput}
           placeholder="• • • •"
         />
-
-        <Text style={styles.hint}>Dev OTP: 1234</Text>
 
         <TouchableOpacity
           style={[
@@ -101,14 +104,12 @@ export default function RiderOtpScreen({
             </>
           )}
         </TouchableOpacity>
-
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: { flex: 1, backgroundColor: '#F9FAFB' },
 
   header: {
@@ -150,13 +151,6 @@ const styles = StyleSheet.create({
     letterSpacing: 16,
   },
 
-  hint: {
-    marginTop: 8,
-    fontSize: 12,
-    color: '#9CA3AF',
-    textAlign: 'center',
-  },
-
   button: {
     marginTop: 22,
     backgroundColor: '#16A34A',
@@ -175,5 +169,4 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginRight: 6,
   },
-
 });
