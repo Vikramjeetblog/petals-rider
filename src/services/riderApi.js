@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BACKEND_URL = 'https://YOUR_BACKEND_URL';
+const BACKEND_URL = 'https://petals-backend-dni0.onrender.com';
 
 let authToken = null;
 
