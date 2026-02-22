@@ -41,7 +41,7 @@ export default function RiderOtpScreen({
         otp,
       });
 
-      const token = response?.data?.token;
+      const token = response?.token;
 
       if (!token) {
         Alert.alert('Verification Failed', 'Missing auth token in response');

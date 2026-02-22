@@ -1,15 +1,8 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
-
-const checklist = [
-  { id: 'profile', title: 'Complete profile', status: 'Done' },
-  { id: 'kyc', title: 'KYC verification', status: 'Pending' },
-  { id: 'bank', title: 'Add bank account', status: 'Done' },
-  { id: 'permissions', title: 'Enable permissions', status: 'Pending' },
-  { id: 'training', title: 'Safety training', status: 'Not started' },
-];
+import { fetchOnboardingChecklist, completeOnboardingTask } from '../services/riderApi';
 
 const routeByItemId = {
   kyc: 'KycStatus',
@@ -20,7 +13,20 @@ const routeByItemId = {
 };
 
 export default function OnboardingChecklistScreen({ navigation }) {
-  const handleOpenItem = (itemId) => {
+  const [checklist, setChecklist] = useState([]);
+
+  const loadChecklist = useCallback(async () => {
+    const data = await fetchOnboardingChecklist();
+    setChecklist(Array.isArray(data) ? data : data?.items || []);
+  }, []);
+
+  useEffect(() => {
+    loadChecklist();
+  }, [loadChecklist]);
+
+  const handleOpenItem = async (itemId) => {
+    await completeOnboardingTask(itemId);
+    loadChecklist();
     const target = routeByItemId[itemId] || 'RiderTabs';
     navigation.navigate(target);
   };

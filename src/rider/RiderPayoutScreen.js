@@ -14,19 +14,9 @@ import {
 
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { fetchWallet, fetchPayouts, withdrawPayout } from '../services/riderApi';
 
 export default function RiderPayoutScreen({ navigation }) {
-  // 🔥 mock backend data
-  const mockWallet = {
-    available: 1250,
-    pending: 340,
-  };
-
-  const mockHistory = [
-    { id: 1, amount: 500, status: 'Completed', date: 'Today' },
-    { id: 2, amount: 750, status: 'Processing', date: 'Yesterday' },
-  ];
-
   const [wallet, setWallet] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,9 +24,9 @@ export default function RiderPayoutScreen({ navigation }) {
 
   const loadData = async () => {
     try {
-      await new Promise((r) => setTimeout(r, 700));
-      setWallet(mockWallet);
-      setHistory(mockHistory);
+      const [walletData, payoutsData] = await Promise.all([fetchWallet(), fetchPayouts()]);
+      setWallet(walletData || { available: 0, pending: 0 });
+      setHistory(Array.isArray(payoutsData) ? payoutsData : payoutsData?.items || []);
     } catch (err) {
       console.log('Payout load error:', err);
     } finally {
@@ -64,7 +54,11 @@ export default function RiderPayoutScreen({ navigation }) {
       { text: 'Cancel' },
       {
         text: 'Confirm',
-        onPress: () => Alert.alert('Payout requested!'),
+        onPress: async () => {
+          await withdrawPayout({ amount: wallet.available });
+          Alert.alert('Payout requested!');
+          loadData();
+        },
       },
     ]);
   };
@@ -75,8 +69,8 @@ export default function RiderPayoutScreen({ navigation }) {
     return (
       <View style={styles.historyCard}>
         <View>
-          <Text style={styles.amount}>₹{item.amount}</Text>
-          <Text style={styles.date}>{item.date}</Text>
+          <Text style={styles.amount}>₹{item.amount || 0}</Text>
+          <Text style={styles.date}>{item.date || item.createdAt || '-'}</Text>
         </View>
 
         <Text style={[styles.status, { color: statusColor }]}>{item.status}</Text>
@@ -118,12 +112,12 @@ export default function RiderPayoutScreen({ navigation }) {
               <View style={styles.walletCard}>
                 <View style={styles.walletRow}>
                   <Text style={styles.label}>Available</Text>
-                  <Text style={styles.balance}>₹{wallet.available}</Text>
+                  <Text style={styles.balance}>₹{wallet?.available || 0}</Text>
                 </View>
 
                 <View style={styles.walletRow}>
                   <Text style={styles.label}>Pending</Text>
-                  <Text style={styles.pending}>₹{wallet.pending}</Text>
+                  <Text style={styles.pending}>₹{wallet?.pending || 0}</Text>
                 </View>
 
                 <TouchableOpacity style={styles.payoutBtn} onPress={requestPayout}>

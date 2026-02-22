@@ -32,7 +32,7 @@ export default function RiderDashboardScreen({ navigation }) {
     try {
       const res = await fetchAssignedOrders();
 
-      const enriched = (res?.data || []).map((o, i) => {
+      const enriched = (Array.isArray(res) ? res : res?.items || []).map((o, i) => {
 
         const deadline =
           Date.now() + (5 + i * 2) * 60 * 1000;
@@ -160,7 +160,7 @@ export default function RiderDashboardScreen({ navigation }) {
         clearInterval(timer);
       };
 
-    }, [order.deadline]);
+    }, [order]);
 
     const mins = Math.floor(timeLeft / 60);
     const secs = timeLeft % 60;

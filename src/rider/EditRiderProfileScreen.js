@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,19 +12,29 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
-// import api from '../../services/api';
+import { fetchRiderProfile, fetchSensitiveInfo, updateRiderProfile, updateSensitiveInfo } from '../services/riderApi';
 
 export default function EditRiderProfileScreen({ navigation }) {
 
-  // mock rider data — replace with backend data
-  const [name, setName] = useState('Rahul Kumar');
-  const [phone] = useState('9876543210');
-  const [vehicle, setVehicle] = useState('DL 01 AB 1234');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [vehicle, setVehicle] = useState('');
   const [loading, setLoading] = useState(false);
 
   const isValid =
     name.trim().length > 2 &&
     vehicle.trim().length > 3;
+
+  useEffect(() => {
+    const hydrate = async () => {
+      const [profile, sensitive] = await Promise.all([fetchRiderProfile(), fetchSensitiveInfo()]);
+      setName(profile?.name || '');
+      setVehicle(profile?.vehicle || profile?.vehicleNumber || '');
+      setPhone(sensitive?.phone || profile?.phone || '');
+    };
+
+    hydrate();
+  }, []);
 
   const handleSave = async () => {
     if (!isValid) return;
@@ -32,14 +42,10 @@ export default function EditRiderProfileScreen({ navigation }) {
     try {
       setLoading(true);
 
-      /*
-      await api.put('/rider/profile', {
-        name,
-        vehicle,
-      });
-      */
-
-      await new Promise(res => setTimeout(res, 800));
+      await Promise.all([
+        updateRiderProfile({ name, vehicle }),
+        updateSensitiveInfo({ phone }),
+      ]);
 
       Alert.alert('Success', 'Profile updated');
 
@@ -81,7 +87,7 @@ export default function EditRiderProfileScreen({ navigation }) {
         <Text style={styles.label}>Phone</Text>
         <TextInput
           value={phone}
-          editable={false}
+          editable
           style={[styles.input, styles.disabled]}
         />
 
