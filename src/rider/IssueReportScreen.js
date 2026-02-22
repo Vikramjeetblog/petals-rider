@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, Pressable, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { createSupportIssue } from '../services/riderApi';
 
 const issues = [
   'Customer unreachable',
@@ -21,7 +22,7 @@ export default function IssueReportScreen({ navigation }) {
 
     try {
       setIsSubmitting(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await createSupportIssue({ issueType: selected, notes });
 
       Alert.alert('Issue submitted', `Support has received: ${selected}`, [
         { text: 'OK', onPress: () => navigation.goBack() },

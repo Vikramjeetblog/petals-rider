@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -10,26 +10,20 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { fetchBankAccounts, deleteBankAccount } from '../services/riderApi';
 
 export default function BankAccountScreen({ navigation }) {
-  const [accounts, setAccounts] = useState([
-    {
-      id: 'acc-1',
-      holderName: 'Rahul Kumar',
-      bankName: 'HDFC Bank',
-      accountLast4: '2317',
-      ifsc: 'HDFC0001234',
-      isPrimary: true,
-    },
-    {
-      id: 'acc-2',
-      holderName: 'Rahul Kumar',
-      bankName: 'ICICI Bank',
-      accountLast4: '9081',
-      ifsc: 'ICIC0009876',
-      isPrimary: false,
-    },
-  ]);
+  const [accounts, setAccounts] = useState([]);
+
+  const loadAccounts = useCallback(async () => {
+    const data = await fetchBankAccounts();
+    setAccounts(Array.isArray(data) ? data : data?.items || []);
+  }, []);
+
+  useEffect(() => {
+    loadAccounts();
+  }, [loadAccounts]);
+
 
   const primaryAccount = useMemo(
     () => accounts.find(account => account.isPrimary),
@@ -54,10 +48,10 @@ export default function BankAccountScreen({ navigation }) {
         {
           text: 'Remove',
           style: 'destructive',
-          onPress: () =>
-            setAccounts(prev =>
-              prev.filter(account => account.id !== accountId)
-            ),
+          onPress: async () => {
+            await deleteBankAccount(accountId);
+            loadAccounts();
+          },
         },
       ]
     );
@@ -69,7 +63,7 @@ export default function BankAccountScreen({ navigation }) {
         <View>
           <Text style={styles.bankName}>{item.bankName}</Text>
           <Text style={styles.accountText}>
-            {item.holderName} • •••• {item.accountLast4}
+            {item.holderName || item.accountHolderName} • •••• {item.accountLast4 || item.last4}
           </Text>
           <Text style={styles.ifsc}>IFSC: {item.ifsc}</Text>
         </View>
@@ -139,7 +133,7 @@ export default function BankAccountScreen({ navigation }) {
 
       <FlatList
         data={accounts}
-        keyExtractor={item => item.id}
+        keyExtractor={item => String(item.id)}
         renderItem={renderAccount}
         contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
         ListHeaderComponent={() => (

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { createBankAccount } from '../services/riderApi';
 
 export default function AddBankAccountScreen({ navigation, route }) {
   const mode = route?.params?.mode || 'add';
@@ -24,14 +25,19 @@ export default function AddBankAccountScreen({ navigation, route }) {
     return holderName.trim() && bankName.trim() && ifsc.trim() && (mode === 'edit' ? true : accountNumber.trim());
   }, [holderName, bankName, ifsc, accountNumber, mode]);
 
-  const save = () => {
+  const save = async () => {
     if (!canSave) {
       Alert.alert('Missing details', 'Please fill all required fields.');
       return;
     }
 
-    // ✅ Replace this with API call:
-    // POST /bank-account or PUT /bank-account
+    await createBankAccount({
+      holderName: holderName.trim(),
+      bankName: bankName.trim(),
+      accountNumber: accountNumber.trim() || initial?.accountNumber,
+      ifsc: ifsc.trim(),
+    });
+
     Alert.alert('Saved!', mode === 'edit' ? 'Account updated.' : 'Account added.', [
       { text: 'OK', onPress: () => navigation.goBack() },
     ]);

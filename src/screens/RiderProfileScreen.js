@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { fetchRiderMe, fetchRiderProfile, fetchEarningsSummary, updateRiderAvailability, logoutRider } from '../services/riderApi';
 
 const quickActions = [
   {
@@ -106,13 +107,28 @@ function ProfileActionRow({ icon, title, subtitle, onPress }) {
 }
 
 export default function RiderProfileScreen({ navigation, onLogout }) {
-  const rider = {
-    name: 'Rahul Kumar',
-    phone: '9876543210',
-    vehicle: 'Bike • DL 01 AB 1234',
-  };
-
+  const [rider, setRider] = useState({ name: 'Rider', phone: '-', vehicle: '-' });
+  const [summary, setSummary] = useState({ deliveries: 0, today: 0, onlineHours: 0 });
   const [online, setOnline] = useState(true);
+
+  const hydrateProfile = useCallback(async () => {
+    const [me, profile, earnings] = await Promise.all([fetchRiderMe(), fetchRiderProfile(), fetchEarningsSummary()]);
+    setRider({
+      name: me?.name || profile?.name || 'Rider',
+      phone: me?.phone || profile?.phone || '-',
+      vehicle: profile?.vehicle || profile?.vehicleNumber || '-',
+    });
+    setOnline(Boolean(profile?.isOnline));
+    setSummary({
+      deliveries: earnings?.deliveries || 0,
+      today: earnings?.today || earnings?.todayEarning || 0,
+      onlineHours: earnings?.onlineHours || 0,
+    });
+  }, []);
+
+  useEffect(() => {
+    hydrateProfile();
+  }, [hydrateProfile]);
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -120,7 +136,8 @@ export default function RiderProfileScreen({ navigation, onLogout }) {
       {
         text: 'Logout',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
+          await logoutRider();
           if (onLogout) {
             onLogout();
           } else {
@@ -157,7 +174,7 @@ export default function RiderProfileScreen({ navigation, onLogout }) {
               <Text style={styles.sectionTitle}>Availability</Text>
               <Text style={styles.sectionHint}>{online ? 'You are online for new orders' : 'You are offline'}</Text>
             </View>
-            <Switch value={online} onValueChange={setOnline} thumbColor="#16A34A" />
+            <Switch value={online} onValueChange={async value => { setOnline(value); await updateRiderAvailability({ isOnline: value }); }} thumbColor="#16A34A" />
           </View>
         </View>
 
@@ -187,15 +204,15 @@ export default function RiderProfileScreen({ navigation, onLogout }) {
           <Text style={styles.sectionTitle}>Today’s Summary</Text>
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Text style={styles.statValue}>6</Text>
+              <Text style={styles.statValue}>{summary.deliveries}</Text>
               <Text style={styles.statLabel}>Deliveries</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={styles.statValue}>₹540</Text>
+              <Text style={styles.statValue}>₹{summary.today}</Text>
               <Text style={styles.statLabel}>Earnings</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={styles.statValue}>8h</Text>
+              <Text style={styles.statValue}>{summary.onlineHours}h</Text>
               <Text style={styles.statLabel}>Online</Text>
             </View>
           </View>
