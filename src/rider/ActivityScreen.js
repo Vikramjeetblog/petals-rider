@@ -1,18 +1,33 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, SafeAreaView, RefreshControl } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
+import EmptyState from '../components/EmptyState';
+import FullscreenLoader from '../components/FullscreenLoader';
+import ScreenWrapper from '../components/ScreenWrapper';
+import colors from '../constants/colors';
+import spacing from '../constants/spacing';
+import typography from '../constants/typography';
 import { fetchEarningsActivity } from '../services/riderApi';
 
 export default function ActivityScreen() {
   const [history, setHistory] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const loadHistory = useCallback(async () => {
     try {
+      setError('');
       const data = await fetchEarningsActivity();
       setHistory(Array.isArray(data) ? data : data?.items || []);
+    } catch (err) {
+      const message = err?.response?.status === 500
+        ? 'Our server is having trouble loading your activity right now.'
+        : 'Unable to load delivery history.';
+      setError(message);
+      setHistory([]);
     } finally {
+      setLoading(false);
       setRefreshing(false);
     }
   }, []);
@@ -23,7 +38,7 @@ export default function ActivityScreen() {
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      <View style={styles.row}><Text style={styles.orderId}>#{item.id || item.orderId}</Text></View>
+      <Text style={styles.orderId}>#{item.id || item.orderId}</Text>
       <Text style={styles.location}>{item.customer || item.location || 'Delivery'}</Text>
       <View style={styles.rowBetween}>
         <Text style={styles.time}>{item.time || item.createdAt || '-'}</Text>
@@ -32,24 +47,74 @@ export default function ActivityScreen() {
     </View>
   );
 
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadHistory();
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      {history.length === 0 ? (
-        <View style={styles.empty}><Icon name="list-outline" size={70} color="#9CA3AF" /><Text style={styles.emptyTitle}>No Delivery History</Text></View>
+    <ScreenWrapper>
+      {error ? (
+        <EmptyState
+          icon="warning-outline"
+          title="Activity unavailable"
+          subtitle={error}
+          actionLabel="Try Again"
+          onAction={loadHistory}
+        />
+      ) : history.length === 0 && !loading ? (
+        <EmptyState
+          icon="list-outline"
+          title="No earnings yet"
+          subtitle="Completed deliveries will appear here. Pull to refresh after finishing your first order."
+          actionLabel="Refresh"
+          onAction={loadHistory}
+        />
       ) : (
         <FlatList
           data={history}
-          keyExtractor={item => String(item.id || item.orderId)}
+          keyExtractor={(item) => String(item.id || item.orderId)}
           renderItem={renderItem}
-          contentContainerStyle={{ padding: 16 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadHistory(); }} />}
+          contentContainerStyle={styles.listContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         />
       )}
-    </SafeAreaView>
+      {loading ? <FullscreenLoader /> : null}
+    </ScreenWrapper>
   );
 }
 
-const styles = StyleSheet.create({ container: { flex: 1, backgroundColor: '#F9FAFB' }, card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, elevation: 2 }, row: { flexDirection: 'row', justifyContent: 'space-between' }, rowBetween: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }, orderId: { fontWeight: '700' }, location: { marginTop: 6, color: '#374151' }, time: { color: '#6B7280', fontSize: 12 }, earning: { color: '#16A34A', fontWeight: '700' }, empty: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }, 
-                                  emptyTitle: { fontSize: 18, 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      fontWeight: '700',
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      marginTop: 12 } });
+const styles = StyleSheet.create({
+  listContent: {
+    paddingVertical: spacing.lg,
+  },
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    elevation: 2,
+  },
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
+  },
+  orderId: {
+    ...typography.subheading,
+    color: colors.textPrimary,
+  },
+  location: {
+    ...typography.body,
+    color: '#374151',
+    marginTop: spacing.xs,
+  },
+  time: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  earning: {
+    ...typography.subheading,
+    color: colors.success,
+  },
+});
