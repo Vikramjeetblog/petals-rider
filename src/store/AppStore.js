@@ -10,6 +10,7 @@ const initialState = {
   orders: { items: [] },
   earnings: { summary: null, activity: [] },
   online: true,
+  network: { isOffline: false },
   themeMode: Appearance.getColorScheme() === 'dark' ? 'dark' : 'light',
   toast: null,
 };
@@ -30,6 +31,8 @@ function reducer(state, action) {
       return { ...state, online: action.payload };
     case 'SET_THEME_MODE':
       return { ...state, themeMode: action.payload };
+    case 'SET_OFFLINE':
+      return { ...state, network: { ...state.network, isOffline: action.payload } };
     case 'SHOW_TOAST':
       return { ...state, toast: { message: action.payload } };
     case 'CLEAR_TOAST':

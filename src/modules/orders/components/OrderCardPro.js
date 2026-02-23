@@ -7,7 +7,15 @@ import Card from '../../../components/ui/Card';
 import AnimatedPressable from '../../../components/ui/AnimatedPressable';
 import useTheme from '../../../hooks/useTheme';
 
-function OrderCardPro({ order, online, onAccept, onReject, acceptDisabled, onLongPress }) {
+function OrderCardPro({
+  order,
+  online,
+  isOffline,
+  onAccept,
+  onReject,
+  acceptDisabled,
+  onLongPress,
+}) {
   const { theme } = useTheme();
 
   return (
@@ -19,10 +27,14 @@ function OrderCardPro({ order, online, onAccept, onReject, acceptDisabled, onLon
         </View>
 
         <Text style={[theme.typography.caption, { color: theme.colors.textSecondary, marginTop: theme.spacing.sm }]}>Pickup</Text>
-        <Text style={[theme.typography.body, { color: theme.colors.textPrimary }]} numberOfLines={2}>{order.pickup}</Text>
+        <Text style={[theme.typography.body, { color: theme.colors.textPrimary }]} numberOfLines={2}>
+          {order.pickup}
+        </Text>
 
         <Text style={[theme.typography.caption, { color: theme.colors.textSecondary, marginTop: theme.spacing.sm }]}>Drop</Text>
-        <Text style={[theme.typography.body, { color: theme.colors.textPrimary }]} numberOfLines={2}>{order.drop}</Text>
+        <Text style={[theme.typography.body, { color: theme.colors.textPrimary }]} numberOfLines={2}>
+          {order.drop}
+        </Text>
 
         <View style={styles.metaRow}>
           <Text style={[theme.typography.caption, { color: theme.colors.textSecondary }]}>Distance: {order.distance || '2.4 km'}</Text>
@@ -30,8 +42,19 @@ function OrderCardPro({ order, online, onAccept, onReject, acceptDisabled, onLon
         </View>
 
         <View style={styles.actions}>
-          <AppButton title={online ? 'Accept' : 'Go online'} disabled={acceptDisabled} style={[styles.button, styles.gap]} onPress={() => onAccept(order)} />
-          <AppButton title="Reject" variant="danger" style={styles.button} onPress={() => onReject(order)} />
+          <AppButton
+            title={isOffline ? 'Offline' : online ? 'Accept' : 'Go online'}
+            disabled={acceptDisabled}
+            style={[styles.button, styles.gap]}
+            onPress={() => onAccept(order)}
+          />
+          <AppButton
+            title="Reject"
+            variant="danger"
+            disabled={isOffline}
+            style={styles.button}
+            onPress={() => onReject(order)}
+          />
         </View>
       </Card>
     </AnimatedPressable>

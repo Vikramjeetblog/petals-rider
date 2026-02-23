@@ -5,10 +5,18 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import RiderTabs from './RiderTabs';
-import { fetchRiderMe, setApiErrorHandler, setAuthToken, setUnauthorizedHandler } from '../services/riderApi';
+import {
+  fetchRiderMe,
+  setApiErrorHandler,
+  setAuthToken,
+  setNetworkStatusHandler,
+  setUnauthorizedHandler,
+} from '../services/riderApi';
 import { AUTH_TOKEN_STORAGE_KEY, INTRO_STORAGE_KEY } from '../constants/storageKeys';
 import { useAppStore } from '../store/AppStore';
 import ToastHost from '../components/ui/ToastHost';
+import OfflineBanner from '../components/ui/OfflineBanner';
+import useNetworkStatus from '../hooks/useNetworkStatus';
 
 import IntroOnboardingScreen from '../screens/IntroOnboardingScreen';
 import RiderLoginScreen from '../screens/auth/RiderLoginScreen';
@@ -88,6 +96,8 @@ export default function RiderNavigator() {
   const [hasSeenIntro, setHasSeenIntro] = useState(false);
   const [isHydrating, setIsHydrating] = useState(true);
 
+  useNetworkStatus();
+
   const clearSession = async () => {
     setAuthToken(null);
     dispatch({ type: 'SET_AUTH', payload: { token: null, isLoggedIn: false } });
@@ -133,9 +143,14 @@ export default function RiderNavigator() {
       Alert.alert('Request failed', message);
     });
 
+    setNetworkStatusHandler((isOnline) => {
+      dispatch({ type: 'SET_OFFLINE', payload: !isOnline });
+    });
+
     return () => {
       setUnauthorizedHandler(null);
       setApiErrorHandler(null);
+      setNetworkStatusHandler(null);
     };
   }, []);
 
@@ -173,6 +188,7 @@ export default function RiderNavigator() {
 
   return (
     <View style={styles.flex}>
+      <OfflineBanner />
       <NavigationContainer theme={navigationTheme}>
         {!hasSeenIntro ? <IntroStack onComplete={completeIntro} /> : state.auth.isLoggedIn ? <RiderStack onLogout={clearSession} /> : <AuthStack onLogin={handleLogin} />}
       </NavigationContainer>
