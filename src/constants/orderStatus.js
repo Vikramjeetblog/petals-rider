@@ -1,0 +1,24 @@
+export const ORDER_STATUS = {
+  ASSIGNED: 'ASSIGNED',
+  ACCEPTED: 'ACCEPTED',
+  PICKED_UP: 'PICKED_UP',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
+  PENDING: 'PENDING',
+};
+
+export const ACCEPTABLE_ORDER_STATUSES = [ORDER_STATUS.ASSIGNED, ORDER_STATUS.PENDING];
+
+export const STATUS_COLOR_MAP = {
+  [ORDER_STATUS.ASSIGNED]: '#2563EB',
+  [ORDER_STATUS.PENDING]: '#2563EB',
+  [ORDER_STATUS.ACCEPTED]: '#7C3AED',
+  [ORDER_STATUS.PICKED_UP]: '#EA580C',
+  [ORDER_STATUS.DELIVERED]: '#16A34A',
+  [ORDER_STATUS.CANCELLED]: '#DC2626',
+};
+
+export function normalizeOrderStatus(status) {
+  if (!status) return ORDER_STATUS.PENDING;
+  return String(status).trim().toUpperCase().replace(/\s+/g, '_');
+}

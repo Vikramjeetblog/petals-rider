@@ -5,6 +5,7 @@ const BACKEND_URL = 'https://petals-backend-dni0.onrender.com';
 
 let authToken = null;
 let unauthorizedHandler = null;
+let apiErrorHandler = null;
 
 const api = axios.create({
   baseURL: BACKEND_URL,
@@ -24,6 +25,10 @@ api.interceptors.response.use(
   error => {
     if (error?.response?.status === 401 && unauthorizedHandler) {
       unauthorizedHandler();
+    }
+
+    if (apiErrorHandler) {
+      apiErrorHandler(normalizeApiError(error));
     }
 
     return Promise.reject(error);
@@ -61,6 +66,22 @@ export function setAuthToken(token) {
 
 export function setUnauthorizedHandler(handler) {
   unauthorizedHandler = handler;
+}
+
+export function setApiErrorHandler(handler) {
+  apiErrorHandler = handler;
+}
+
+export function normalizeApiError(error) {
+  const status = error?.response?.status;
+  const message =
+    error?.response?.data?.message ||
+    (status === 500 ? 'Server error. Please try again.' : null) ||
+    (status === 401 ? 'Session expired. Please login again.' : null) ||
+    error?.message ||
+    'Something went wrong.';
+
+  return { status, message, raw: error };
 }
 
 // 1) Rider Auth APIs

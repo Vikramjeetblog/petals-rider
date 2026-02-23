@@ -3,10 +3,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import RiderDashboardScreen from '../screens/RiderDashboardScreen';
+import RiderDashboardScreen from '../modules/dashboard/screens/DashboardScreen';
 import RiderProfileScreen from '../screens/RiderProfileScreen';
 import EarningsScreen from '../rider/EarningsScreen';
-import ActivityScreen from '../rider/ActivityScreen';
+import ActivityScreen from '../modules/earnings/screens/ActivityScreen';
 
 const Tab = createBottomTabNavigator();
 
