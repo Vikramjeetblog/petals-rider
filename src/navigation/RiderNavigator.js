@@ -5,7 +5,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import RiderTabs from './RiderTabs';
 
-import { setAuthToken } from '../services/riderApi';
+import { setAuthToken, setUnauthorizedHandler } from '../services/riderApi';
+import { AUTH_TOKEN_STORAGE_KEY, INTRO_STORAGE_KEY } from '../constants/storageKeys';
 
 import IntroOnboardingScreen from '../screens/IntroOnboardingScreen';
 import RiderLoginScreen from '../screens/auth/RiderLoginScreen';
@@ -32,8 +33,6 @@ import OrderEnRouteScreen from '../rider/OrderEnRouteScreen';
 import OrderArrivedScreen from '../rider/OrderArrivedScreen';
 import DeliverySummaryScreen from '../rider/DeliverySummaryScreen';
 
-const INTRO_STORAGE_KEY = '@petals_rider_intro_completed';
-const AUTH_TOKEN_STORAGE_KEY = '@petals_rider_auth_token';
 const Stack = createNativeStackNavigator();
 
 function IntroStack({ onComplete }) {
@@ -120,6 +119,21 @@ export default function RiderNavigator() {
     };
 
     hydrateNavigationState();
+  }, []);
+
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setAuthToken(null);
+      setIsLoggedIn(false);
+      AsyncStorage.removeItem(AUTH_TOKEN_STORAGE_KEY).catch(() => {
+        // no-op fallback
+      });
+    });
+
+    return () => {
+      setUnauthorizedHandler(null);
+    };
   }, []);
 
   const completeIntro = async () => {

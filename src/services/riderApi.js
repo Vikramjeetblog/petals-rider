@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { API_ROUTES, RIDER_API_BASE } from '../constants/apiRoutes';
 
 const BACKEND_URL = 'https://petals-backend-dni0.onrender.com';
-const RIDER_API_BASE = '/api/v1/rider';
 
 let authToken = null;
+let unauthorizedHandler = null;
 
 const api = axios.create({
   baseURL: BACKEND_URL,
@@ -18,8 +19,29 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error?.response?.status === 401 && unauthorizedHandler) {
+      unauthorizedHandler();
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 function riderPath(path) {
   return `${RIDER_API_BASE}${path}`;
+}
+
+function asMultipartConfig(config) {
+  return {
+    ...config,
+    headers: {
+      ...(config?.headers || {}),
+      'Content-Type': 'multipart/form-data',
+    },
+  };
 }
 
 async function request(method, path, data, config) {
@@ -37,88 +59,103 @@ export function setAuthToken(token) {
   authToken = token;
 }
 
+export function setUnauthorizedHandler(handler) {
+  unauthorizedHandler = handler;
+}
+
 // 1) Rider Auth APIs
-export const requestRiderOtp = phone => request('post', '/auth/request-otp', { phone });
+export const requestRiderOtp = phone => request('post', API_ROUTES.auth.requestOtp, { phone });
 
-export const verifyRiderOtp = ({ phone, otp }) => request('post', '/auth/verify-otp', { phone, otp });
+export const verifyRiderOtp = ({ phone, otp }) =>
+  request('post', API_ROUTES.auth.verifyOtp, { phone, otp });
 
-export const logoutRider = () => request('post', '/auth/logout');
+export const logoutRider = () => request('post', API_ROUTES.auth.logout);
 
-export const fetchRiderMe = () => request('get', '/auth/me');
+export const fetchRiderMe = () => request('get', API_ROUTES.auth.me);
 
 // 2) Rider Profile & Availability
-export const fetchRiderProfile = () => request('get', '/profile');
+export const fetchRiderProfile = () => request('get', API_ROUTES.profile.root);
 
-export const updateRiderProfile = payload => request('patch', '/profile', payload);
+export const updateRiderProfile = payload => request('patch', API_ROUTES.profile.root, payload);
 
-export const updateRiderLocation = payload => request('post', '/location', payload);
+export const updateRiderLocation = payload => request('post', API_ROUTES.profile.location, payload);
 
-export const updateRiderAvailability = payload => request('patch', '/availability', payload);
+export const updateRiderAvailability = payload =>
+  request('patch', API_ROUTES.profile.availability, payload);
 
-export const fetchSensitiveInfo = () => request('get', '/sensitive-info');
+export const fetchSensitiveInfo = () => request('get', API_ROUTES.profile.sensitiveInfo);
 
-export const updateSensitiveInfo = payload => request('patch', '/sensitive-info', payload);
+export const updateSensitiveInfo = payload =>
+  request('patch', API_ROUTES.profile.sensitiveInfo, payload);
 
 // 3) Rider Order APIs
 export const fetchAssignedOrders = query =>
-  request('get', '/orders', undefined, { params: query });
+  request('get', API_ROUTES.orders.root, undefined, { params: query });
 
-export const fetchOrderDetails = orderId => request('get', `/orders/${orderId}`);
+export const fetchOrderDetails = orderId => request('get', `${API_ROUTES.orders.root}/${orderId}`);
 
 export const verifyPickupOtp = (orderId, payload) =>
-  request('post', `/orders/${orderId}/pickup/verify-otp`, payload);
+  request('post', `${API_ROUTES.orders.root}/${orderId}/pickup/verify-otp`, payload);
 
 export const updateOrderStatus = (orderId, payload) =>
-  request('post', `/orders/${orderId}/status`, payload);
+  request('post', `${API_ROUTES.orders.root}/${orderId}/status`, payload);
 
 export const verifyDeliveryOtp = (orderId, payload) =>
-  request('post', `/orders/${orderId}/delivery/verify-otp`, payload);
+  request('post', `${API_ROUTES.orders.root}/${orderId}/delivery/verify-otp`, payload);
 
 export const uploadDeliveryProof = (orderId, payload) =>
-  request('post', `/orders/${orderId}/delivery-proof`, payload);
+  request(
+    'post',
+    `${API_ROUTES.orders.root}/${orderId}/delivery-proof`,
+    payload,
+    asMultipartConfig()
+  );
 
 // 4) Earnings / Wallet / Payouts
-export const fetchEarningsSummary = () => request('get', '/earnings/summary');
+export const fetchEarningsSummary = () => request('get', API_ROUTES.earnings.summary);
 
 export const fetchEarningsActivity = query =>
-  request('get', '/earnings/activity', undefined, { params: query });
+  request('get', API_ROUTES.earnings.activity, undefined, { params: query });
 
-export const fetchWallet = () => request('get', '/wallet');
+export const fetchWallet = () => request('get', API_ROUTES.wallet.root);
 
-export const fetchPayouts = query => request('get', '/payouts', undefined, { params: query });
+export const fetchPayouts = query => request('get', API_ROUTES.payouts.root, undefined, { params: query });
 
-export const withdrawPayout = payload => request('post', '/payouts/withdraw', payload);
+export const withdrawPayout = payload => request('post', API_ROUTES.payouts.withdraw, payload);
 
 // 5) Bank Account APIs
-export const fetchBankAccounts = () => request('get', '/bank-accounts');
+export const fetchBankAccounts = () => request('get', API_ROUTES.bankAccounts.root);
 
-export const createBankAccount = payload => request('post', '/bank-accounts', payload);
+export const createBankAccount = payload => request('post', API_ROUTES.bankAccounts.root, payload);
 
 export const deleteBankAccount = bankAccountId =>
-  request('delete', `/bank-accounts/${bankAccountId}`);
+  request('delete', `${API_ROUTES.bankAccounts.root}/${bankAccountId}`);
 
 // 6) KYC & Onboarding APIs
-export const fetchKycStatus = () => request('get', '/kyc/status');
+export const fetchKycStatus = () => request('get', API_ROUTES.kyc.status);
 
-export const uploadKycDocuments = payload => request('post', '/kyc/documents', payload);
+export const uploadKycDocuments = payload =>
+  request('post', API_ROUTES.kyc.documents, payload, asMultipartConfig());
 
-export const uploadKycSelfie = payload => request('post', '/kyc/selfie', payload);
+export const uploadKycSelfie = payload =>
+  request('post', API_ROUTES.kyc.selfie, payload, asMultipartConfig());
 
-export const fetchOnboardingChecklist = () => request('get', '/onboarding/checklist');
+export const fetchOnboardingChecklist = () => request('get', API_ROUTES.onboarding.checklist);
 
 export const completeOnboardingTask = taskId =>
-  request('post', `/onboarding/checklist/${taskId}/complete`);
+  request('post', `${API_ROUTES.onboarding.checklist}/${taskId}/complete`);
 
 // 7) Notifications / Support / Safety APIs
 export const fetchNotifications = query =>
-  request('get', '/notifications', undefined, { params: query });
+  request('get', API_ROUTES.notifications.root, undefined, { params: query });
 
-export const markNotificationRead = id => request('patch', `/notifications/${id}/read`);
+export const markNotificationRead = id =>
+  request('patch', `${API_ROUTES.notifications.root}/${id}/read`);
 
-export const fetchNotificationById = id => request('get', `/notifications/${id}`);
+export const fetchNotificationById = id => request('get', `${API_ROUTES.notifications.root}/${id}`);
 
-export const createSupportIssue = payload => request('post', '/support/issues', payload);
+export const createSupportIssue = payload => request('post', API_ROUTES.support.issues, payload);
 
-export const fetchSafetyTraining = () => request('get', '/safety/training');
+export const fetchSafetyTraining = () => request('get', API_ROUTES.safety.training);
 
 export default api;
